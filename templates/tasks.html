@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <header>
+        <h1>Страница задний</h1>
+    </header>
+
+    <main>
+        {% if current_user.is_authenticated %}
+            <p>Добро пожаловать, {{ current_user.email }}!</p>
+
+
+            <h2>Ваши задания:</h2>
+            <ul>
+                {% for task in tasks %}
+                    <li>
+                        People: {{ task.num_people }},
+                        P1 SP 0: {{ task.p1_sp0 }}
+                        <form method="POST" action="{{ url_for('users.delete_task', task_id=task.id) }}">
+                            {{ form.csrf_token }}
+                            {{ form.submit(class="btn btn-danger", value="Delete Task") }}
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+
+        <form method="POST" action="{{ url_for('users.logout') }}">
+                {{ form.csrf_token }}
+                {{ form.submit(class="btn btn-danger", value="Выход") }}
+        </form>
+
+        {% else %}
+            <p>Please log in to view your tasks.</p>
+        {% endif %}
+    </main>
+</body>
+</html>

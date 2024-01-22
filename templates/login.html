@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+</head>
+<body>
+    <header>
+        <h1>Вход в аккаунт</h1>
+    </header>
+
+    <main>
+        {% if current_user.is_authenticated %}
+            <p>Welcome, {{ current_user.username }}!</p>
+            <form method="POST" action="{{ url_for('users.logout') }}">
+                {{ form.csrf_token }}
+                {{ form.submit(class="btn btn-danger", value="Выйти") }}
+            </form>
+        {% else %}
+            <form method="POST" action="{{ url_for('users.login') }}">
+                {{ form.csrf_token }}
+                <label for="email">Email:</label>
+                {{ form.email(class="form-control", placeholder="Введите email", required=true) }}
+                <br>
+                <br>
+                <label for="password">Пароль:</label>
+                {{ form.password(class="form-control", placeholder="Введите пароль", required=true) }}
+                <br>
+                <br>
+                <label for="remember">Запомнить:</label>
+                {{ form.remember() }}
+                <br>
+                <br>
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+
+            <br>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <br class="flashes">
+                    {% for category, message in messages %}
+                        {% if category == 'error' and not message.startswith('Task deleted') %}
+                            <li class="{{ category }}">{{ message }}</li>
+                        {% endif %}
+                    {% endfor %}
+                    <br>
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+    </main>
+</body>
+</html>
