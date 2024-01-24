@@ -72,7 +72,10 @@ class Task(db.Model):
 class TaskAssignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    task_name = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    week_num = db.Column(db.Integer)
+    assigned = db.Column(db.Boolean, default=False)
 
     task = db.relationship('Task', back_populates='assignments')
     user = db.relationship('Users', back_populates='assigned_tasks')

@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import current_user, login_user, login_required, logout_user
 from __init__ import login_manager
 from .__init__ import users, tasks
@@ -6,7 +6,6 @@ from .models import Users, Admins, db, Task, TaskAssignment
 from .forms import LoginForm, TaskForm
 from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta
-import numpy as np
 
 
 def calculate_project_duration(num_people, p1_sp0, p1_sp1, p1_sp2, p1_sp3, p1_sp5, p1_sp8, p1_sp55, p2_sp0,
@@ -19,7 +18,7 @@ def calculate_project_duration(num_people, p1_sp0, p1_sp1, p1_sp2, p1_sp3, p1_sp
                          p2_sp55 * 0 + p3_sp0 * 4.68 + p3_sp1 * 5.82 + p3_sp2 * 14.96 + p3_sp3 * 34.64 + p3_sp5 * 57.51
                          + p3_sp8 * 123.57 + p3_sp55 * 0 + p4_sp0 * 4.88 + p4_sp1 * 4.49 + p4_sp2 * 14.4 + p4_sp3 *
                          33.95 + p4_sp5 * 63.55 + p4_sp8 * 106.43 + p4_sp55 * 0 + p5_sp0 * 0.24 + p5_sp1 * 6.55 + p5_sp2
-                         * 14.13 + p5_sp3 * 26.05 + p5_sp5 * 24 + p5_sp8 * 108 + p5_sp55 * 150) / num_people) / 1.3
+                         * 14.13 + p5_sp3 * 26.05 + p5_sp5 * 24 + p5_sp8 * 108 + p5_sp55 * 150) / num_people) / 4
     return project_duration
 
 
@@ -42,7 +41,6 @@ def calculate_date(start_date, project_duration):
     end_date = current_day - timedelta(days=1)
 
     return end_date.strftime('%Y-%m-%d')
-
 
 
 @users.route('/', methods=['GET', 'POST'])
@@ -100,12 +98,13 @@ def index():
             task.p4_sp0, task.p4_sp1, task.p4_sp2, task.p4_sp3, task.p4_sp5, task.p4_sp8, task.p4_sp55,
             task.p5_sp0, task.p5_sp1, task.p5_sp2, task.p5_sp3, task.p5_sp5, task.p5_sp8, task.p5_sp55))
 
-        task.start_project_date = form.start_date_project.data
-        task.ending_project_date = calculate_date(form.start_date_project, task.project_duration)
+        task.start_project_date = form.start_project_date.data
+        task.ending_project_date = calculate_date(form.start_project_date, task.project_duration)
 
         db.session.commit()
 
         return redirect(url_for('users.index'))
+
 
     tasks = Task.query.all()
 
@@ -113,6 +112,112 @@ def index():
         return render_template('index.html', title='Home', user=current_user, form=form, tasks=tasks)
     else:
         return redirect(url_for('users.login'))
+
+
+@users.route('/users/edit_project/<int:task_id>', methods=['GET', 'POST'])
+@login_required
+def edit_project(task_id):
+    task = Task.query.get_or_404(task_id)
+    form = TaskForm(obj=task)
+
+    if form.validate_on_submit():
+        task.name_project = form.name_project.data
+        task.num_people = form.num_people.data
+        task.start_project_date = form.start_project_date.data
+        task.p1_sp0 = form.p1_sp0.data
+        task.p1_sp1 = form.p1_sp1.data
+        task.p1_sp2 = form.p1_sp2.data
+        task.p1_sp3 = form.p1_sp3.data
+        task.p1_sp5 = form.p1_sp5.data
+        task.p1_sp8 = form.p1_sp8.data
+        task.p1_sp55 = form.p1_sp55.data
+        task.p2_sp0 = form.p2_sp0.data
+        task.p2_sp1 = form.p2_sp1.data
+        task.p2_sp2 = form.p2_sp2.data
+        task.p2_sp3 = form.p2_sp3.data
+        task.p2_sp5 = form.p2_sp5.data
+        task.p2_sp8 = form.p2_sp8.data
+        task.p2_sp55 = form.p2_sp55.data
+        task.p3_sp0 = form.p3_sp0.data
+        task.p3_sp1 = form.p3_sp1.data
+        task.p3_sp2 = form.p3_sp2.data
+        task.p3_sp3 = form.p3_sp3.data
+        task.p3_sp5 = form.p3_sp5.data
+        task.p3_sp8 = form.p3_sp8.data
+        task.p3_sp55 = form.p3_sp55.data
+        task.p4_sp0 = form.p4_sp0.data
+        task.p4_sp1 = form.p4_sp1.data
+        task.p4_sp2 = form.p4_sp2.data
+        task.p4_sp3 = form.p4_sp3.data
+        task.p4_sp5 = form.p4_sp5.data
+        task.p4_sp8 = form.p4_sp8.data
+        task.p4_sp55 = form.p4_sp55.data
+        task.p5_sp0 = form.p5_sp0.data
+        task.p5_sp1 = form.p5_sp1.data
+        task.p5_sp2 = form.p5_sp2.data
+        task.p5_sp3 = form.p5_sp3.data
+        task.p5_sp5 = form.p5_sp5.data
+        task.p5_sp8 = form.p5_sp8.data
+        task.p5_sp55 = form.p5_sp55.data
+
+        db.session.commit()
+
+        task.project_duration = int(calculate_project_duration(
+            task.num_people,
+            task.p1_sp0, task.p1_sp1, task.p1_sp2, task.p1_sp3, task.p1_sp5, task.p1_sp8, task.p1_sp55,
+            task.p2_sp0, task.p2_sp1, task.p2_sp2, task.p2_sp3, task.p2_sp5, task.p2_sp8, task.p2_sp55,
+            task.p3_sp0, task.p3_sp1, task.p3_sp2, task.p3_sp3, task.p3_sp5, task.p3_sp8, task.p3_sp55,
+            task.p4_sp0, task.p4_sp1, task.p4_sp2, task.p4_sp3, task.p4_sp5, task.p4_sp8, task.p4_sp55,
+            task.p5_sp0, task.p5_sp1, task.p5_sp2, task.p5_sp3, task.p5_sp5, task.p5_sp8, task.p5_sp55))
+
+        task.ending_project_date = calculate_date(form.start_project_date, task.project_duration)
+
+        db.session.commit()
+
+    return render_template('edit_project.html', title='Изменение проекта', form=form, task=task)
+
+
+@users.route('/assign_tasks', methods=['POST'])
+@login_required
+def assign_tasks():
+    tasks_to_assign = Task.query.all()
+
+    for task in tasks_to_assign:
+        assign_task_to_users(task)
+
+    return redirect(url_for('users.index'))
+
+
+def assign_task_to_users(task):
+    users = Users.query.all()
+
+    project_duration_days = (task.ending_project_date - task.start_project_date).days
+
+    weeks_per_project = project_duration_days // 7
+
+    column_names = ['p1_sp0', 'p1_sp1', 'p1_sp2', 'p1_sp3', 'p1_sp5', 'p1_sp8']
+
+    for user in users:
+        for column_name in column_names:
+            assign_task_to_user(task, user, weeks_per_project / len(users), column_name)
+
+
+def assign_task_to_user(task, user, weeks_per_user, column_name):
+    assigned_tasks_count = TaskAssignment.query.filter_by(user_id=user.id).count()
+
+    tasks_to_assign_count = min(task.p2_sp1, weeks_per_user)
+
+    if tasks_to_assign_count > assigned_tasks_count:
+        for week_num in range(1, int(weeks_per_user) + 1):
+            assignment = TaskAssignment(
+                task_id=task.id,
+                task_name=column_name,
+                user_id=user.id,
+                week_num=week_num,
+                assigned=True)
+            db.session.add(assignment)
+
+        db.session.commit()
 
 
 @login_manager.user_loader

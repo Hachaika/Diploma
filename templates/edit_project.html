@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Project</title>
+</head>
+<body>
+    <h1>Изменение проекта</h1>
+    <form method="post" action="{{ url_for('users.edit_project', task_id=task.id) }}" style="display: inline;">
+        {{ form.hidden_tag() }}
+        {{ form.csrf_token }}
+        <label for="name_project">Название проекта:</label>
+        {{ form.name_project(placeholder="Название проекта") }}
+        <br>
+        <br>
+        <label for="num_people">Количество людей в проекте:</label>
+        {{ form.num_people(placeholder="Количество людей") }}
+        <br>
+        <br>
+        <label for="start_project_date">Дата начала проекта:</label>
+        {{ form.start_project_date(placeholder="Дата") }}
+        <br>
+        <br>
+        <table>
+            <tr>
+                <th></th>
+                <th>P1</th>
+                <th>P2</th>
+                <th>P3</th>
+                <th>P4</th>
+                <th>P5</th>
+            </tr>
+            <tr>
+                <td>SP 0:</td>
+                <td>{{ form.p1_sp0(placeholder="Задания P1 SP 0") }}</td>
+                <td>{{ form.p2_sp0(placeholder="Задания P2 SP 0") }}</td>
+                <td>{{ form.p3_sp0(placeholder="Задания P3 SP 0") }}</td>
+                <td>{{ form.p4_sp0(placeholder="Задания P4 SP 0") }}</td>
+                <td>{{ form.p5_sp0(placeholder="Задания P5 SP 0") }}</td>
+            </tr>
+            <tr>
+                <td>SP 1:</td>
+                <td>{{ form.p1_sp1(placeholder="Задания P1 SP 1") }}</td>
+                <td>{{ form.p2_sp1(placeholder="Задания P2 SP 1") }}</td>
+                <td>{{ form.p3_sp1(placeholder="Задания P3 SP 1") }}</td>
+                <td>{{ form.p4_sp1(placeholder="Задания P4 SP 1") }}</td>
+                <td>{{ form.p5_sp1(placeholder="Задания P5 SP 1") }}</td>
+            </tr>
+            <tr>
+                <td>SP 2:</td>
+                <td>{{ form.p1_sp2(placeholder="Задания P1 SP 2") }}</td>
+                <td>{{ form.p2_sp2(placeholder="Задания P2 SP 2") }}</td>
+                <td>{{ form.p3_sp2(placeholder="Задания P3 SP 2") }}</td>
+                <td>{{ form.p4_sp2(placeholder="Задания P4 SP 2") }}</td>
+                <td>{{ form.p5_sp2(placeholder="Задания P5 SP 2") }}</td>
+            </tr>
+            <tr>
+                <td>SP 3:</td>
+                <td>{{ form.p1_sp3(placeholder="Задания P1 SP 3") }}</td>
+                <td>{{ form.p2_sp3(placeholder="Задания P2 SP 3") }}</td>
+                <td>{{ form.p3_sp3(placeholder="Задания P3 SP 3") }}</td>
+                <td>{{ form.p4_sp3(placeholder="Задания P4 SP 3") }}</td>
+                <td>{{ form.p5_sp3(placeholder="Задания P5 SP 3") }}</td>
+            </tr>
+            <tr>
+                <td>SP 5:</td>
+                <td>{{ form.p1_sp5(placeholder="Задания P1 SP 5") }}</td>
+                <td>{{ form.p2_sp5(placeholder="Задания P2 SP 5") }}</td>
+                <td>{{ form.p3_sp5(placeholder="Задания P3 SP 5") }}</td>
+                <td>{{ form.p4_sp5(placeholder="Задания P4 SP 5") }}</td>
+                <td>{{ form.p5_sp5(placeholder="Задания P5 SP 5") }}</td>
+            </tr>
+            <tr>
+                <td>SP 8:</td>
+                <td>{{ form.p1_sp8(placeholder="Задания P1 SP 8") }}</td>
+                <td>{{ form.p2_sp8(placeholder="Задания P2 SP 8") }}</td>
+                <td>{{ form.p3_sp8(placeholder="Задания P3 SP 8") }}</td>
+                <td>{{ form.p4_sp8(placeholder="Задания P4 SP 8") }}</td>
+                <td>{{ form.p5_sp8(placeholder="Задания P5 SP 8") }}</td>
+            </tr>
+            <tr>
+                <td>SP 55:</td>
+                <td>{{ form.p1_sp55(placeholder="Задания P1 SP 55") }}</td>
+                <td>{{ form.p2_sp55(placeholder="Задания P2 SP 55") }}</td>
+                <td>{{ form.p3_sp55(placeholder="Задания P3 SP 55") }}</td>
+                <td>{{ form.p4_sp55(placeholder="Задания P4 SP 55") }}</td>
+                <td>{{ form.p5_sp55(placeholder="Задания P5 SP 55") }}</td>
+            </tr>
+        </table>
+
+        <style>
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            th, td {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+
+            th {
+                background-color: #f2f2f2;
+            }
+
+            .delete-btn {
+                margin-left: 10px;
+            }
+        </style>
+
+        <br>
+        {{ form.submit(class="btn btn-danger", value="Сохранить") }}
+    </form>
+    <form method="post" action="{{ url_for('users.index') }}">
+        {{ form.csrf_token }}
+        <br>
+        {{ form.submit(class="btn btn-danger", value="Вернуться к форме проекта") }}
+    </form>
+    <form method="post" action="{{ url_for('users.logout') }}">
+        {{ form.csrf_token }}
+        <br>
+        {{ form.submit(class="btn btn-danger", value="Выход") }}
+    </form>
+</body>
+</html>

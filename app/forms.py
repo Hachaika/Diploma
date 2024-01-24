@@ -15,7 +15,7 @@ class LoginForm(FlaskForm):
 class TaskForm(FlaskForm):
     name_project = StringField('Название проекта', validators=[DataRequired()])
     num_people = IntegerField('Количество участников', validators=[DataRequired()])
-    start_date_project = DateField('Дата начала проекта', validators=[DataRequired()])
+    start_project_date = DateField('Дата начала проекта', validators=[DataRequired()])
     p1_sp0 = IntegerField('P1 SP 0', default=0)
     p1_sp1 = IntegerField('P1 SP 1', default=0)
     p1_sp2 = IntegerField('P1 SP 2', default=0)
@@ -52,3 +52,4 @@ class TaskForm(FlaskForm):
     p5_sp8 = IntegerField('P5 SP 8', default=0)
     p5_sp55 = IntegerField('P5 SP 55', default=0)
     submit = SubmitField('Submit')
+

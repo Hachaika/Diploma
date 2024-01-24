@@ -20,7 +20,7 @@
         <br>
         <br>
         <label for="num_people">Дата начала проекта:</label>
-        {{ form.start_date_project(placeholder="Дата") }}
+        {{ form.start_project_date(placeholder="Дата") }}
         <br>
         <br>
 
@@ -155,6 +155,12 @@
             <td>{{ task.p3_sp1 }}</td>
             <td>{{ task.p4_sp1 }}</td>
             <td>{{ task.p5_sp1 }}</td>
+            <td>
+                <form method="post" action="{{ url_for('users.edit_project', task_id=task.id) }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Изменить</button>
+                </form>
+            </td>
         </tr>
         <tr>
         <td style="color:green">{{ task.project_duration }}</td>
@@ -165,11 +171,18 @@
             <td>{{ task.p3_sp2 }}</td>
             <td>{{ task.p4_sp2 }}</td>
             <td>{{ task.p5_sp2 }}</td>
+            <td>
+                <form method="post" action="{{ url_for('users.assign_tasks') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Распределить задания</button>
+                </form>
+            </td>
         </tr>
         <tr>
         <th>Дата начала</th>
         <th>Дата окончания</th>
         <th>SP 3:</th>
+
             <td>{{ task.p1_sp3 }}</td>
             <td>{{ task.p2_sp3 }}</td>
             <td>{{ task.p3_sp3 }}</td>
@@ -235,5 +248,7 @@
             {% endfor %}
         </ul>
     {% endif %}
+
 </body>
 </html>
+
