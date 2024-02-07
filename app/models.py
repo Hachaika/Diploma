@@ -76,9 +76,8 @@ class TaskAssignment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     week_num = db.Column(db.Integer)
     assigned = db.Column(db.Boolean, default=False)
+    done = db.Column(db.Boolean, default=False)
 
     task = db.relationship('Task', back_populates='assignments')
     user = db.relationship('Users', back_populates='assigned_tasks')
 
-    def __repr__(self):
-        return f'<TaskAssignment {self.id}>'

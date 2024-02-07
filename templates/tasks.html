@@ -7,35 +7,44 @@
 </head>
 <body>
     <header>
-        <h1>Страница задний</h1>
+        <h1>Страница заданий</h1>
     </header>
 
     <main>
         {% if current_user.is_authenticated %}
             <p>Добро пожаловать, {{ current_user.email }}!</p>
 
-
             <h2>Ваши задания:</h2>
-            <ul>
-                {% for task in tasks %}
-                    <li>
-                        People: {{ task.num_people }},
-                        P1 SP 0: {{ task.p1_sp0 }}
-                        <form method="POST" action="{{ url_for('users.delete_task', task_id=task.id) }}">
-                            {{ form.csrf_token }}
-                            {{ form.submit(class="btn btn-danger", value="Delete Task") }}
-                        </form>
-                    </li>
-                {% endfor %}
-            </ul>
-
-        <form method="POST" action="{{ url_for('users.logout') }}">
+            <form method="POST" action="{{ url_for('users.update_task_assignment') }}">
+                {{ form.csrf_token }}
+                <ul>
+                    {% for assignment in current_user.assigned_tasks %}
+                        <li>
+                            <input type="checkbox" name="task_assignment_{{ assignment.id }}" id="task_assignment_{{ assignment.id }}" {% if assignment.done %}checked{% endif %}>
+                            <label for="task_assignment_{{ assignment.id }}">{{ assignment.task_name }} for Week {{ assignment.week_num }}</label>
+                            <input type="hidden" name="assignment_id_{{ assignment.id }}" value="{{ assignment.id }}">
+                        </li>
+                    {% endfor %}
+                </ul>
+                <button type="submit">Обновить состояние заданий</button>
+            </form>
+            <form method="POST" action="{{ url_for('users.logout') }}">
                 {{ form.csrf_token }}
                 {{ form.submit(class="btn btn-danger", value="Выход") }}
-        </form>
+            </form>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
         {% else %}
-            <p>Please log in to view your tasks.</p>
+            <p>Пожалуйста, войдите, чтобы просмотреть свои задания.</p>
         {% endif %}
     </main>
 </body>

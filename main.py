@@ -23,7 +23,7 @@ def create_admin_user():
 
 
 def create_user():
-    user_email = "vip.polyakov1911@bk.ru"
+    user_email = "vip.polyakov1@bk.ru"
     user_password = "Zxcasd1234"
 
     existing_user = Users.query.filter_by(email=user_email).first()

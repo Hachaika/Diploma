@@ -6,6 +6,7 @@ from .models import Users, Admins, db, Task, TaskAssignment
 from .forms import LoginForm, TaskForm
 from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta
+from math import ceil
 
 
 def calculate_project_duration(num_people, p1_sp0, p1_sp1, p1_sp2, p1_sp3, p1_sp5, p1_sp8, p1_sp55, p2_sp0,
@@ -180,44 +181,53 @@ def edit_project(task_id):
 @users.route('/assign_tasks', methods=['POST'])
 @login_required
 def assign_tasks():
-    tasks_to_assign = Task.query.all()
+    tasks = Task.query.all()
+    users = Users.query.all()
 
-    for task in tasks_to_assign:
-        assign_task_to_users(task)
+    for task in tasks:
+        for i in range(1, 6):
+            for j in [55, 8, 5, 3, 2, 1, 0]:
+                task_name = f"p{i}_sp{j}"
+                current_assignments_count = TaskAssignment.query.filter_by(task_id=task.id, task_name=task_name).count()
+                total_assignments_count = getattr(task, task_name)
+                if current_assignments_count < total_assignments_count:
+                    assignments_to_add = total_assignments_count - current_assignments_count
+                    assignments_per_user = ceil(assignments_to_add / len(users))
+                    user_index = 0
+                    for _ in range(assignments_to_add):
+                        user = users[user_index % len(users)]
+                        new_assignment = TaskAssignment(
+                            task_name=task_name,
+                            task_id=task.id,
+                            user_id=user.id
+                        )
+                        db.session.add(new_assignment)
+                        user_index += 1
 
+    db.session.commit()
     return redirect(url_for('users.index'))
 
 
-def assign_task_to_users(task):
-    users = Users.query.all()
+@users.route('/update_task_assignment', methods=['POST'])
+@login_required
+def update_task_assignment():
+    if request.method == 'POST':
+        flash_displayed = False
+        for assignment in current_user.assigned_tasks:
+            assignment_id = request.form.get(f'assignment_id_{assignment.id}')
+            task_assignment = TaskAssignment.query.get(assignment_id)
+            if task_assignment:
+                task_assignment.done = True if request.form.get(f'task_assignment_{assignment.id}') else False
+                db.session.commit()
+                if not flash_displayed:
+                    flash('Состояние задания успешно обновлено', 'success')
+                    flash_displayed = True
+            else:
+                if not flash_displayed:
+                    flash('Задание не найдено', 'error')
+                    flash_displayed = True
+    return redirect(url_for('users.tasks_page'))
 
-    project_duration_days = (task.ending_project_date - task.start_project_date).days
-
-    weeks_per_project = project_duration_days // 7
-
-    column_names = ['p1_sp0', 'p1_sp1', 'p1_sp2', 'p1_sp3', 'p1_sp5', 'p1_sp8']
-
-    for user in users:
-        for column_name in column_names:
-            assign_task_to_user(task, user, weeks_per_project / len(users), column_name)
-
-
-def assign_task_to_user(task, user, weeks_per_user, column_name):
-    assigned_tasks_count = TaskAssignment.query.filter_by(user_id=user.id).count()
-
-    tasks_to_assign_count = min(task.p2_sp1, weeks_per_user)
-
-    if tasks_to_assign_count > assigned_tasks_count:
-        for week_num in range(1, int(weeks_per_user) + 1):
-            assignment = TaskAssignment(
-                task_id=task.id,
-                task_name=column_name,
-                user_id=user.id,
-                week_num=week_num,
-                assigned=True)
-            db.session.add(assignment)
-
-        db.session.commit()
 
 
 @login_manager.user_loader
@@ -277,3 +287,5 @@ def tasks_page():
     tasks = TaskAssignment.query.filter_by(user_id=current_user.id).all()
 
     return render_template('tasks.html', title='Tasks', user=current_user, tasks=tasks, form=form)
+
+
