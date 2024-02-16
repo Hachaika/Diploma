@@ -6,6 +6,8 @@ from .models import Users, Admins, db, Task, TaskAssignment
 from .forms import LoginForm, TaskForm
 from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
 from math import ceil
 
 
@@ -192,7 +194,6 @@ def assign_tasks():
                 total_assignments_count = getattr(task, task_name)
                 if current_assignments_count < total_assignments_count:
                     assignments_to_add = total_assignments_count - current_assignments_count
-                    assignments_per_user = ceil(assignments_to_add / len(users))
                     user_index = 0
                     for _ in range(assignments_to_add):
                         user = users[user_index % len(users)]
@@ -205,6 +206,50 @@ def assign_tasks():
                         user_index += 1
 
     db.session.commit()
+    return redirect(url_for('users.index'))
+
+
+@users.route('/distribute_tasks_per_week', methods=['POST'])
+@login_required
+def distribute_tasks_per_week():
+    users = Users.query.all()
+    hours_per_week = 20
+
+    task_durations = {
+        'p1_sp0': 0, 'p1_sp1': 1, 'p1_sp2': 0, 'p1_sp3': 0, 'p1_sp5': 0, 'p1_sp8': 0, 'p1_sp55': 0,
+        'p2_sp0': 0.2, 'p2_sp1': 1.36, 'p2_sp2': 13.11, 'p2_sp3': 30.45, 'p2_sp5': 66.43, 'p2_sp8': 0, 'p2_sp55': 0,
+        'p3_sp0': 4.68, 'p3_sp1': 5.82, 'p3_sp2': 14.96, 'p3_sp3': 34.64, 'p3_sp5': 57.51, 'p3_sp8': 123.57,
+        'p3_sp55': 0,
+        'p4_sp0': 4.88, 'p4_sp1': 4.49, 'p4_sp2': 14.4, 'p4_sp3': 33.95, 'p4_sp5': 63.55, 'p4_sp8': 106.43,
+        'p4_sp55': 0,
+        'p5_sp0': 0.24, 'p5_sp1': 6.55, 'p5_sp2': 14.13, 'p5_sp3': 26.05, 'p5_sp5': 24, 'p5_sp8': 108, 'p5_sp55': 150
+    }
+
+    max_week_num = 1
+
+    for user in users:
+        user_assignments = TaskAssignment.query.filter_by(user_id=user.id).all()
+        remaining_hours = hours_per_week
+
+        for assignment in user_assignments:
+            task_name = assignment.task_name
+            task_hours = task_durations.get(task_name, 0)
+
+            while task_hours >= 0:
+                week_hours = remaining_hours - task_hours
+
+                assignment.week_num = max_week_num
+                assignment.hours = week_hours
+
+                db.session.commit()
+
+                task_hours -= week_hours
+                remaining_hours -= week_hours
+
+                if remaining_hours <= 0:
+                    remaining_hours = hours_per_week
+                    max_week_num += 1
+
     return redirect(url_for('users.index'))
 
 
@@ -227,7 +272,6 @@ def update_task_assignment():
                     flash('Задание не найдено', 'error')
                     flash_displayed = True
     return redirect(url_for('users.tasks_page'))
-
 
 
 @login_manager.user_loader
@@ -270,11 +314,35 @@ def delete_task(task_id):
     task = Task.query.get(task_id)
 
     if task:
-        db.session.delete(task)
-        db.session.commit()
-        flash('Проект удален успешно', 'success')
+        try:
+            TaskAssignment.query.filter_by(task_id=task_id).delete()
+            db.session.delete(task)
+            db.session.commit()
+            flash('Проект удален успешно', 'success')
+        except IntegrityError:
+            db.session.rollback()
+            flash('Ошибка удаления проекта: сначала удалите связанные задания', 'error')
     else:
         flash('Проект не найден', 'error')
+
+    return redirect(url_for('users.index'))
+
+
+@users.route('/delete_assignment/<int:task_id>', methods=['POST'])
+@login_required
+def delete_assignment(task_id):
+    task_assignment = TaskAssignment.query.get(task_id)
+
+    if task_assignment:
+        try:
+            db.session.delete(task_assignment)
+            db.session.commit()
+            flash('Распределение удалено успешно', 'success')
+        except IntegrityError:
+            db.session.rollback()
+            flash('Ошибка удаления распределения', 'error')
+    else:
+        flash('Распределение не найдено', 'error')
 
     return redirect(url_for('users.index'))
 

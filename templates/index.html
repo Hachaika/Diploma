@@ -188,6 +188,12 @@
             <td>{{ task.p3_sp3 }}</td>
             <td>{{ task.p4_sp3 }}</td>
             <td>{{ task.p5_sp3 }}</td>
+            <td>
+                <form method="post" action="{{ url_for('users.distribute_tasks_per_week') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Распределить задания <br>по неделям</button>
+                </form>
+            </td>
         </tr>
         <tr>
         <td>{{ task.start_project_date }}</td>
@@ -198,6 +204,12 @@
             <td>{{ task.p3_sp5 }}</td>
             <td>{{ task.p4_sp5 }}</td>
             <td>{{ task.p5_sp5 }}</td>
+            <td>
+                <form method="post" action="{{ url_for('users.delete_assignment', task_id=task.id) }}" style="display: inline;">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-danger delete-btn">Удалить распределение</button>
+                </form>
+            </td>
         </tr>
         <tr>
         <td></td>
