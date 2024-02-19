@@ -93,13 +93,13 @@ def index():
         db.session.add(task)
 
         db.session.flush()
-        task.project_duration = int(calculate_project_duration(
+        task.project_duration = round(calculate_project_duration(
             task.num_people,
             task.p1_sp0, task.p1_sp1, task.p1_sp2, task.p1_sp3, task.p1_sp5, task.p1_sp8, task.p1_sp55,
             task.p2_sp0, task.p2_sp1, task.p2_sp2, task.p2_sp3, task.p2_sp5, task.p2_sp8, task.p2_sp55,
             task.p3_sp0, task.p3_sp1, task.p3_sp2, task.p3_sp3, task.p3_sp5, task.p3_sp8, task.p3_sp55,
             task.p4_sp0, task.p4_sp1, task.p4_sp2, task.p4_sp3, task.p4_sp5, task.p4_sp8, task.p4_sp55,
-            task.p5_sp0, task.p5_sp1, task.p5_sp2, task.p5_sp3, task.p5_sp5, task.p5_sp8, task.p5_sp55))
+            task.p5_sp0, task.p5_sp1, task.p5_sp2, task.p5_sp3, task.p5_sp5, task.p5_sp8, task.p5_sp55), 0)
 
         task.start_project_date = form.start_project_date.data
         task.ending_project_date = calculate_date(form.start_project_date, task.project_duration)
@@ -200,7 +200,8 @@ def assign_tasks():
                         new_assignment = TaskAssignment(
                             task_name=task_name,
                             task_id=task.id,
-                            user_id=user.id
+                            user_id=user.id,
+                            deadline=task.ending_project_date
                         )
                         db.session.add(new_assignment)
                         user_index += 1
@@ -225,30 +226,29 @@ def distribute_tasks_per_week():
         'p5_sp0': 0.24, 'p5_sp1': 6.55, 'p5_sp2': 14.13, 'p5_sp3': 26.05, 'p5_sp5': 24, 'p5_sp8': 108, 'p5_sp55': 150
     }
 
-    max_week_num = 1
-
     for user in users:
-        user_assignments = TaskAssignment.query.filter_by(user_id=user.id).all()
+        user_assignments = TaskAssignment.query.filter_by(user_id=user.id).order_by(TaskAssignment.deadline).all()
         remaining_hours = hours_per_week
+        week_num = 1
 
         for assignment in user_assignments:
             task_name = assignment.task_name
             task_hours = task_durations.get(task_name, 0)
 
-            while task_hours >= 0:
-                week_hours = remaining_hours - task_hours
+            if task_hours > remaining_hours:
+                weeks_needed = ceil(task_hours / hours_per_week)
+                assignment.hours = remaining_hours
+                assignment.week_num = week_num
+                remaining_hours = 0
+                task_hours -= remaining_hours
+                week_num += weeks_needed
+            else:
+                assignment.hours = task_hours
+                assignment.week_num = week_num
+                remaining_hours -= task_hours
+                task_hours = 0
 
-                assignment.week_num = max_week_num
-                assignment.hours = week_hours
-
-                db.session.commit()
-
-                task_hours -= week_hours
-                remaining_hours -= week_hours
-
-                if remaining_hours <= 0:
-                    remaining_hours = hours_per_week
-                    max_week_num += 1
+            db.session.commit()
 
     return redirect(url_for('users.index'))
 
@@ -331,18 +331,15 @@ def delete_task(task_id):
 @users.route('/delete_assignment/<int:task_id>', methods=['POST'])
 @login_required
 def delete_assignment(task_id):
-    task_assignment = TaskAssignment.query.get(task_id)
+    deleted_assignments = TaskAssignment.query.filter_by(task_id=task_id).all()
 
-    if task_assignment:
-        try:
-            db.session.delete(task_assignment)
-            db.session.commit()
-            flash('Распределение удалено успешно', 'success')
-        except IntegrityError:
-            db.session.rollback()
-            flash('Ошибка удаления распределения', 'error')
+    if deleted_assignments:
+        for assignment in deleted_assignments:
+            db.session.delete(assignment)
+        db.session.commit()
+        flash('Распределения удалены успешно', 'success')
     else:
-        flash('Распределение не найдено', 'error')
+        flash('Распределения не найдены', 'error')
 
     return redirect(url_for('users.index'))
 

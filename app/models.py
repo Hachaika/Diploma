@@ -78,6 +78,7 @@ class TaskAssignment(db.Model):
     assigned = db.Column(db.Boolean, default=False)
     done = db.Column(db.Boolean, default=False)
     hours = db.Column(db.Float)
+    deadline = db.Column(db.DateTime, nullable=False)
 
     task = db.relationship('Task', back_populates='assignments')
     user = db.relationship('Users', back_populates='assigned_tasks')
