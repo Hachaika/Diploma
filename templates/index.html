@@ -35,11 +35,11 @@
             </tr>
             <tr>
                 <td>SP 0:</td>
-                <td>{{ form.p1_sp0(placeholder="Задания P1 SP 0") }}</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp0(placeholder="Задания P1 SP 0") }}</td>
                 <td>{{ form.p2_sp0(placeholder="Задания P2 SP 0") }}</td>
                 <td>{{ form.p3_sp0(placeholder="Задания P3 SP 0") }}</td>
                 <td>{{ form.p4_sp0(placeholder="Задания P4 SP 0") }}</td>
-                <td>{{ form.p5_sp0(placeholder="Задания P5 SP 0") }}</td>
+                <td style="background:#bbbbbb">{{ form.p5_sp0(placeholder="Задания P5 SP 0") }}</td>
             </tr>
             <tr>
                 <td>SP 1:</td>
@@ -51,7 +51,7 @@
             </tr>
             <tr>
                 <td>SP 2:</td>
-                <td>{{ form.p1_sp2(placeholder="Задания P1 SP 2") }}</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp2(placeholder="Задания P1 SP 2") }}</td>
                 <td>{{ form.p2_sp2(placeholder="Задания P2 SP 2") }}</td>
                 <td>{{ form.p3_sp2(placeholder="Задания P3 SP 2") }}</td>
                 <td>{{ form.p4_sp2(placeholder="Задания P4 SP 2") }}</td>
@@ -59,7 +59,7 @@
             </tr>
             <tr>
                 <td>SP 3:</td>
-                <td>{{ form.p1_sp3(placeholder="Задания P1 SP 3") }}</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp3(placeholder="Задания P1 SP 3") }}</td>
                 <td>{{ form.p2_sp3(placeholder="Задания P2 SP 3") }}</td>
                 <td>{{ form.p3_sp3(placeholder="Задания P3 SP 3") }}</td>
                 <td>{{ form.p4_sp3(placeholder="Задания P4 SP 3") }}</td>
@@ -67,7 +67,7 @@
             </tr>
             <tr>
                 <td>SP 5:</td>
-                <td>{{ form.p1_sp5(placeholder="Задания P1 SP 5") }}</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp5(placeholder="Задания P1 SP 5") }}</td>
                 <td>{{ form.p2_sp5(placeholder="Задания P2 SP 5") }}</td>
                 <td>{{ form.p3_sp5(placeholder="Задания P3 SP 5") }}</td>
                 <td>{{ form.p4_sp5(placeholder="Задания P4 SP 5") }}</td>
@@ -75,24 +75,43 @@
             </tr>
             <tr>
                 <td>SP 8:</td>
-                <td>{{ form.p1_sp8(placeholder="Задания P1 SP 8") }}</td>
-                <td>{{ form.p2_sp8(placeholder="Задания P2 SP 8") }}</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp8(placeholder="Задания P1 SP 8") }}</td>
+                <td style="background:#bbbbbb">{{ form.p2_sp8(placeholder="Задания P2 SP 8") }}</td>
                 <td>{{ form.p3_sp8(placeholder="Задания P3 SP 8") }}</td>
                 <td>{{ form.p4_sp8(placeholder="Задания P4 SP 8") }}</td>
                 <td>{{ form.p5_sp8(placeholder="Задания P5 SP 8") }}</td>
             </tr>
             <tr>
+                <td>SP 13:</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp13(placeholder="Задания P1 SP 13") }}</td>
+                <td style="background:#bbbbbb">{{ form.p2_sp13(placeholder="Задания P2 SP 13") }}</td>
+                <td style="background:#bbbbbb">{{ form.p3_sp13(placeholder="Задания P3 SP 13") }}</td>
+                <td>{{ form.p4_sp13(placeholder="Задания P4 SP 13") }}</td>
+                <td style="background:#bbbbbb">{{ form.p5_sp13(placeholder="Задания P5 SP 13") }}</td>
+            </tr>
+            <tr>
+                <td>SP 21:</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp21(placeholder="Задания P1 SP 21") }}</td>
+                <td style="background:#bbbbbb">{{ form.p2_sp21(placeholder="Задания P2 SP 21") }}</td>
+                <td style="background:#bbbbbb">{{ form.p3_sp21(placeholder="Задания P3 SP 21") }}</td>
+                <td style="background:#bbbbbb">{{ form.p4_sp21(placeholder="Задания P4 SP 21") }}</td>
+                <td style="background:#bbbbbb">{{ form.p5_sp21(placeholder="Задания P5 SP 21") }}</td>
+            </tr>
+            <tr>
                 <td>SP 55:</td>
-                <td>{{ form.p1_sp55(placeholder="Задания P1 SP 55") }}</td>
-                <td>{{ form.p2_sp55(placeholder="Задания P2 SP 55") }}</td>
-                <td>{{ form.p3_sp55(placeholder="Задания P3 SP 55") }}</td>
+                <td style="background:#bbbbbb">{{ form.p1_sp55(placeholder="Задания P1 SP 55") }}</td>
+                <td style="background:#bbbbbb">{{ form.p2_sp55(placeholder="Задания P2 SP 55") }}</td>
+                <td style="background:#bbbbbb">{{ form.p3_sp55(placeholder="Задания P3 SP 55") }}</td>
                 <td>{{ form.p4_sp55(placeholder="Задания P4 SP 55") }}</td>
-                <td>{{ form.p5_sp55(placeholder="Задания P5 SP 55") }}</td>
+                <td style="background:#bbbbbb">{{ form.p5_sp55(placeholder="Задания P5 SP 55") }}</td>
             </tr>
         </table>
-
         <br>
-        {{ form.submit(class="btn btn-danger", value="Создать") }}
+        <div style="display: inline-block; width: 13px; height: 13px; background-color: #bbbbbb; margin-right: 5px;"></div>
+        <span><b>- Не влияет на срок</b></span>
+        <br>
+        <br>
+        <input type="submit" class="btn btn-danger" value="Создать">
     </form>
 
     <h2>Сохраненные проекты:</h2>
@@ -134,11 +153,11 @@
             <td><B><I><U>{{ task.name_project }}</U></I></B></td>
             <td><B><I>{{ task.num_people }}</I></B></td>
             <th>SP 0:</th>
-            <td>{{ task.p1_sp0 }}</td>
+            <td style="background:#bbbbbb">{{ task.p1_sp0 }}</td>
             <td>{{ task.p2_sp0 }}</td>
             <td>{{ task.p3_sp0 }}</td>
             <td>{{ task.p4_sp0 }}</td>
-            <td>{{ task.p5_sp0 }}</td>
+            <td style="background:#bbbbbb">{{ task.p5_sp0 }}</td>
             <td>
                 <form method="post" action="{{ url_for('users.delete_task', task_id=task.id) }}" style="display: inline;">
                     {{ form.csrf_token }}
@@ -166,7 +185,7 @@
         <td style="color:green">{{ task.project_duration }}</td>
         <td></td>
         <th>SP 2:</th>
-            <td>{{ task.p1_sp2 }}</td>
+            <td style="background:#bbbbbb">{{ task.p1_sp2 }}</td>
             <td>{{ task.p2_sp2 }}</td>
             <td>{{ task.p3_sp2 }}</td>
             <td>{{ task.p4_sp2 }}</td>
@@ -183,7 +202,7 @@
         <th>Дата окончания</th>
         <th>SP 3:</th>
 
-            <td>{{ task.p1_sp3 }}</td>
+            <td style="background:#bbbbbb">{{ task.p1_sp3 }}</td>
             <td>{{ task.p2_sp3 }}</td>
             <td>{{ task.p3_sp3 }}</td>
             <td>{{ task.p4_sp3 }}</td>
@@ -199,7 +218,7 @@
         <td>{{ task.start_project_date }}</td>
         <td>{{ task.ending_project_date }}</td>
         <th>SP 5:</th>
-            <td>{{ task.p1_sp5 }}</td>
+            <td style="background:#bbbbbb">{{ task.p1_sp5 }}</td>
             <td>{{ task.p2_sp5 }}</td>
             <td>{{ task.p3_sp5 }}</td>
             <td>{{ task.p4_sp5 }}</td>
@@ -216,8 +235,8 @@
         <td></td>
         <td></td>
         <th>SP 8:</th>
-            <td>{{ task.p1_sp8 }}</td>
-            <td>{{ task.p2_sp8 }}</td>
+            <td style="background:#bbbbbb">{{ task.p1_sp8 }}</td>
+            <td style="background:#bbbbbb">{{ task.p2_sp8 }}</td>
             <td>{{ task.p3_sp8 }}</td>
             <td>{{ task.p4_sp8 }}</td>
             <td>{{ task.p5_sp8 }}</td>
@@ -225,12 +244,32 @@
         <tr>
         <td></td>
         <td></td>
+        <th>SP 13:</th>
+            <td style="background:#bbbbbb">{{ task.p1_sp13 }}</td>
+            <td style="background:#bbbbbb">{{ task.p2_sp13 }}</td>
+            <td style="background:#bbbbbb">{{ task.p3_sp13 }}</td>
+            <td>{{ task.p4_sp13 }}</td>
+            <td style="background:#bbbbbb">{{ task.p5_sp13 }}</td>
+        </tr>
+        <tr>
+        <td></td>
+        <td></td>
+        <th>SP 21:</th>
+            <td style="background:#bbbbbb">{{ task.p1_sp21 }}</td>
+            <td style="background:#bbbbbb">{{ task.p2_sp21 }}</td>
+            <td style="background:#bbbbbb">{{ task.p3_sp21 }}</td>
+            <td style="background:#bbbbbb">{{ task.p4_sp21 }}</td>
+            <td style="background:#bbbbbb">{{ task.p5_sp21 }}</td>
+        </tr>
+        <tr>
+        <td></td>
+        <td></td>
         <th>SP 55:</th>
-            <td>{{ task.p1_sp55 }}</td>
-            <td>{{ task.p2_sp55 }}</td>
-            <td>{{ task.p3_sp55 }}</td>
+            <td style="background:#bbbbbb">{{ task.p1_sp55 }}</td>
+            <td style="background:#bbbbbb">{{ task.p2_sp55 }}</td>
+            <td style="background:#bbbbbb">{{ task.p3_sp55 }}</td>
             <td>{{ task.p4_sp55 }}</td>
-            <td>{{ task.p5_sp55 }}</td>
+            <td style="background:#bbbbbb">{{ task.p5_sp55 }}</td>
         </tr>
         {% endfor %}
         <tr>
