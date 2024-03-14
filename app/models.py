@@ -7,6 +7,7 @@ class Users(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(10000))
     name = db.Column(db.String(1000))
+    kpd = db.Column(db.Float)
     assigned_tasks = db.relationship('TaskAssignment', back_populates='user')
 
     def __repr__(self):

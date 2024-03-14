@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User</title>
+</head>
+<style>
+    h1 {
+        text-align: center;
+        text-decoration: underline;
+    }
+
+    body {
+        text-align: center;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 50%;
+        margin: auto;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    form {
+        display: inline;
+    }
+</style>
+<body>
+    <h1>Изменение пользователя</h1>
+    <table>
+        <tr>
+            <th>Поле</th>
+            <th>Значение</th>
+        </tr>
+        <tr>
+            <td><b>Почта:</b></td>
+            <td>
+                <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="text" name="email" value="{{ user.email }}">
+                    <button type="submit">Сохранить</button>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td><b>Пароль:</b></td>
+            <td>
+                <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="text" name="password" value="{{ user.password }}">
+                    <button type="submit">Сохранить</button>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td><b>Имя и фамилия:</b></td>
+            <td>
+                <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="text" name="name" value="{{ user.name }}">
+                    <button type="submit">Сохранить</button>
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <td><b>КПД:</b></td>
+            <td>
+                <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="text" name="kpd" value="{{ user.kpd }}">
+                    <button type="submit">Сохранить</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <br>
+    <br>
+    <form action="{{ url_for('users.users_page') }}" method="get">
+        <button type="submit">Вернуться к пользователям</button>
+    </form>
+</body>
+</html>

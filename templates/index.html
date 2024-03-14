@@ -116,6 +116,11 @@
 
     <h2>Сохраненные проекты:</h2>
     <style>
+    h1 {
+        text-align: center;
+        text-decoration: underline;
+    }
+
     table {
         border-collapse: collapse;
         width: 100%;
@@ -240,6 +245,11 @@
             <td>{{ task.p3_sp8 }}</td>
             <td>{{ task.p4_sp8 }}</td>
             <td>{{ task.p5_sp8 }}</td>
+            <td>
+            <form action="{{ url_for('users.users_page') }}">
+                <input type="submit" value="Пользователи">
+            </form>
+            </td>
         </tr>
         <tr>
         <td></td>

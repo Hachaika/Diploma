@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, IntegerField, DateField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, IntegerField, DateField, FloatField
 from wtforms.validators import DataRequired, Email, Length
 
 
@@ -61,5 +61,14 @@ class TaskForm(FlaskForm):
     p5_sp13 = IntegerField('P5 SP 13', default=0)
     p5_sp21 = IntegerField('P5 SP 21', default=0)
     p5_sp55 = IntegerField('P5 SP 55', default=0)
+    submit = SubmitField('Submit')
+
+
+class UsersForm(FlaskForm):
+    id = IntegerField("Id")
+    email = StringField("Почта")
+    password = StringField("Пароль")
+    name = StringField("Имя и Фамилия")
+    kpd = FloatField("КПД")
     submit = SubmitField('Submit')
 

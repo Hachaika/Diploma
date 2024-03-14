@@ -426,6 +426,58 @@ def delete_assignment(task_id):
     return redirect(url_for('users.index'))
 
 
+@users.route('/users')
+@login_required
+def users_page():
+    users = Users.query.all()
+    return render_template('users.html', users=users)
+
+
+@users.route('/add_user', methods=['POST'])
+@login_required
+def add_user():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        name = request.form['name']
+        kpd = request.form['kpd']
+
+        if kpd == '':
+            kpd = None
+
+        new_user = Users(email=email, password=password, name=name, kpd=kpd)
+        db.session.add(new_user)
+        db.session.commit()
+
+    return redirect(url_for('users.users_page'))
+
+
+@users.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    user = Users.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('Пользователь успешно удален', 'success')
+    return redirect(url_for('users.users_page'))
+
+
+@users.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    user = Users.query.get_or_404(user_id)
+    if request.method == 'POST':
+        user.email = request.form.get('email', user.email)
+        user.password = request.form.get('password', user.password)
+        user.name = request.form.get('name', user.name)
+        user.kpd = request.form.get('kpd', user.kpd)
+        if user.kpd == '':
+            user.kpd = None
+        db.session.commit()
+        flash('Информация о пользователе успешно обновлена', 'success')
+    return render_template('edit_user.html', user=user)
+
+
 @users.route('/tasks', methods=['GET'])
 @login_required
 def tasks_page():
