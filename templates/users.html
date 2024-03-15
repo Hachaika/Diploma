@@ -31,7 +31,9 @@
     }
 
     .delete-btn {
-        margin-left: 10px;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
     }
 </style>
 <body>
@@ -39,12 +41,11 @@
     <table border="1">
         <tr>
             <th>ID</th>
-            <th>Email</th>
+            <th>Почта</th>
             <th>Пароль</th>
-            <th>Name</th>
-            <th>KPD</th>
-            <th>Действия</th>
-            <th></th>
+            <th>Имя и фамилия</th>
+            <th>КПД</th>
+            <th colspan="2" style="text-align: center;">Действия</th>
         </tr>
         {% for user in users %}
         <tr>
@@ -53,12 +54,12 @@
             <td>{{ user.password }}</td>
             <td>{{ user.name }}</td>
             <td>{{ user.kpd }}</td>
-            <td>
+            <td style="background-color: #f2f2f2;">
                 <form action="{{ url_for('users.delete_user', user_id=user.id) }}" method="post">
                     <button type="submit" class="delete-btn">Удалить</button>
                 </form>
             </td>
-            <td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                 <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
                     <button type="submit">Изменить</button>
                 </form>
@@ -72,10 +73,16 @@
                 <td><input type="text" name="password" placeholder="Пароль"></td>
                 <td><input type="text" name="name" placeholder="Имя и Фамилия"></td>
                 <td><input type="text" name="kpd" placeholder="КПД"></td>
-                <td><button type="submit">Добавить</button></td>
+                <td style="text-align: center; background-color: #f2f2f2;"><button type="submit">Добавить</button></td>
+                <td style="text-align: center; background-color: #f2f2f2;"></td>
             </form>
         </tr>
     </table>
+    <br>
+    <br>
+    <form action="{{ url_for('users.update_kpd_from_excel') }}" method="post">
+        <button type="submit">Распределение КПД из бд</button>
+    </form>
     <br>
     <br>
     <form action="{{ url_for('users.index') }}" method="get">

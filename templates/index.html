@@ -136,9 +136,6 @@
         background-color: #f2f2f2;
     }
 
-    .delete-btn {
-        margin-left: 10px;
-    }
     </style>
 
     <table>
@@ -151,7 +148,7 @@
             <th>P3</th>
             <th>P4</th>
             <th>P5</th>
-            <th>Действия</th>
+            <th style="text-align: center;">Действия</th>
         </tr>
         {% for task in tasks %}
         <tr>
@@ -163,7 +160,7 @@
             <td>{{ task.p3_sp0 }}</td>
             <td>{{ task.p4_sp0 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp0 }}</td>
-            <td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                 <form method="post" action="{{ url_for('users.delete_task', task_id=task.id) }}" style="display: inline;">
                     {{ form.csrf_token }}
                     <button type="submit" class="btn btn-danger delete-btn">Удалить</button>
@@ -179,7 +176,7 @@
             <td>{{ task.p3_sp1 }}</td>
             <td>{{ task.p4_sp1 }}</td>
             <td>{{ task.p5_sp1 }}</td>
-            <td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                 <form method="post" action="{{ url_for('users.edit_project', task_id=task.id) }}">
                     {{ form.csrf_token }}
                     <button type="submit" class="btn btn-primary">Изменить</button>
@@ -195,7 +192,7 @@
             <td>{{ task.p3_sp2 }}</td>
             <td>{{ task.p4_sp2 }}</td>
             <td>{{ task.p5_sp2 }}</td>
-            <td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                 <form method="post" action="{{ url_for('users.assign_tasks') }}">
                     {{ form.csrf_token }}
                     <button type="submit" class="btn btn-primary">Распределить задания</button>
@@ -212,7 +209,7 @@
             <td>{{ task.p3_sp3 }}</td>
             <td>{{ task.p4_sp3 }}</td>
             <td>{{ task.p5_sp3 }}</td>
-            <td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                 <form method="post" action="{{ url_for('users.distribute_tasks_per_week') }}">
                     {{ form.csrf_token }}
                     <button type="submit" class="btn btn-primary">Распределить задания <br>по неделям</button>
@@ -228,7 +225,7 @@
             <td>{{ task.p3_sp5 }}</td>
             <td>{{ task.p4_sp5 }}</td>
             <td>{{ task.p5_sp5 }}</td>
-            <td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                 <form method="post" action="{{ url_for('users.delete_assignment', task_id=task.id) }}" style="display: inline;">
                     {{ form.csrf_token }}
                     <button type="submit" class="btn btn-danger delete-btn">Удалить распределение</button>
@@ -245,7 +242,7 @@
             <td>{{ task.p3_sp8 }}</td>
             <td>{{ task.p4_sp8 }}</td>
             <td>{{ task.p5_sp8 }}</td>
-            <td>
+            <td style="text-align: center; background-color: #f2f2f2;">
             <form action="{{ url_for('users.users_page') }}">
                 <input type="submit" value="Пользователи">
             </form>
@@ -260,6 +257,11 @@
             <td style="background:#bbbbbb">{{ task.p3_sp13 }}</td>
             <td>{{ task.p4_sp13 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp13 }}</td>
+            <td style="text-align: center; background-color: #f2f2f2;">
+                <form action="{{ url_for('users.hard_assignment') }}" method="get">
+                <button type="submit">Распределение сложных задач</button>
+            </form>
+            </td>
         </tr>
         <tr>
         <td></td>
@@ -270,6 +272,7 @@
             <td style="background:#bbbbbb">{{ task.p3_sp21 }}</td>
             <td style="background:#bbbbbb">{{ task.p4_sp21 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp21 }}</td>
+            <td style="text-align: center; background-color: #f2f2f2;"></td>
         </tr>
         <tr>
         <td></td>
@@ -280,6 +283,7 @@
             <td style="background:#bbbbbb">{{ task.p3_sp55 }}</td>
             <td>{{ task.p4_sp55 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp55 }}</td>
+            <td style="text-align: center; background-color: #f2f2f2;"></td>
         </tr>
         {% endfor %}
         <tr>

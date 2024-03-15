@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        h1 {
+            text-align: center;
+            text-decoration: underline;
+        }
+
+        body {
+            text-align: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .user-select {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Распределение сложных заданий</h1>
+    <table id="assignment-table">
+        <tr>
+            <th>Задание</th>
+            <th>Количество</th>
+            <th>Пользователь</th>
+            <th>Времени на задание</th>
+        </tr>
+        {% for task in tasks %}
+            <tr>
+                <td rowspan="3">{{ task.task_name }}</td>
+                <td rowspan="3">{{ task.num_sp }}</td>
+                <td>
+                    <select class="user-select">
+                        <option value="">Select User</option>
+                        {% for user in task.users %}
+                            <option value="{{ user.id }}">{{ user.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td rowspan="3"><input type="number" min="0" value="0"></td>
+            </tr>
+            <tr>
+                <td>
+                    <select class="user-select">
+                        <option value="">Select User</option>
+                        {% for user in task.users %}
+                            <option value="{{ user.id }}">{{ user.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select class="user-select">
+                        <option value="">Select User</option>
+                        {% for user in task.users %}
+                            <option value="{{ user.id }}">{{ user.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

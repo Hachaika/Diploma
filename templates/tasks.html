@@ -12,7 +12,7 @@
 
     <main>
         {% if current_user.is_authenticated %}
-            <p>Добро пожаловать, {{ current_user.email }}!</p>
+            <p>Добро пожаловать, {{ current_user.name }}!</p>
 
             <h2>Ваши задания:</h2>
             <form method="POST" action="{{ url_for('users.update_task_assignment') }}">
@@ -27,12 +27,14 @@
                     {% endfor %}
                 </ul>
                 <button type="submit">Обновить состояние заданий</button>
+                <br>
+                <br>
             </form>
             <form method="POST" action="{{ url_for('users.logout') }}">
                 {{ form.csrf_token }}
                 {{ form.submit(class="btn btn-danger", value="Выход") }}
             </form>
-
+            <br>
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}

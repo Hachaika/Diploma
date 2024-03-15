@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Hard Assignment</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .checkbox-input {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Распределение сложных задач пользователю: {{ user.name }}</h1>
+
+    <h2>Информация о пользователе:</h2>
+    <p>Почта: {{ user.email }}</p>
+    <p>Имя и Фамилия: {{ user.name }}</p>
+    <p>КПД: {{ user.kpd }}</p>
+
+    <h2>Задания:</h2>
+    <table>
+        <tr>
+            <th>P1_SP13</th>
+            <th>P1_SP21</th>
+            <th>P1_SP55</th>
+            <th>P2_SP13</th>
+            <th>P2_SP21</th>
+            <th>P2_SP55</th>
+            <th>P3_SP13</th>
+            <th>P3_SP21</th>
+            <th>P3_SP55</th>
+            <th>P4_SP13</th>
+            <th>P4_SP21</th>
+            <th>P4_SP55</th>
+            <th>P5_SP13</th>
+            <th>P5_SP21</th>
+            <th>P5_SP55</th>
+        </tr>
+        {% for task in tasks %}
+        <tr>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p1_sp13" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p1_sp13_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p1_sp21" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p1_sp21_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p1_sp55" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p1_sp55_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p2_sp13" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p2_sp13_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p2_sp21" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p2_sp21_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p2_sp55" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p2_sp55_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p3_sp13" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p3_sp13_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p3_sp21" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p3_sp21_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p3_sp55" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p3_sp55_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p4_sp13" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p4_sp13_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p4_sp21" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p4_sp21_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p4_sp55" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p4_sp55_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p5_sp13" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p5_sp13_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p5_sp21" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p5_sp21_week" placeholder="Номер недели">
+            </td>
+            <td>
+                <label>Назначить</label>
+                <input type="checkbox" class="checkbox-input" name="p5_sp55" value="{{ task.id }}">
+                <br>
+                <br>
+                <input type="text" name="p5_sp55_week" placeholder="Номер недели">
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <br>
+    <button type="submit">Распределить задачи</button>
+    </form>
+</body>
+</html>

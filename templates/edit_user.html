@@ -41,6 +41,7 @@
         <tr>
             <th>Поле</th>
             <th>Значение</th>
+            <th style="text-align: center;">Действия</th>
         </tr>
         <tr>
             <td><b>Почта:</b></td>
@@ -48,6 +49,8 @@
                 <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
                     <input type="hidden" name="_method" value="PUT">
                     <input type="text" name="email" value="{{ user.email }}">
+            </td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                     <button type="submit">Сохранить</button>
                 </form>
             </td>
@@ -58,6 +61,8 @@
                 <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
                     <input type="hidden" name="_method" value="PUT">
                     <input type="text" name="password" value="{{ user.password }}">
+            </td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                     <button type="submit">Сохранить</button>
                 </form>
             </td>
@@ -68,6 +73,8 @@
                 <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
                     <input type="hidden" name="_method" value="PUT">
                     <input type="text" name="name" value="{{ user.name }}">
+            </td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                     <button type="submit">Сохранить</button>
                 </form>
             </td>
@@ -78,6 +85,8 @@
                 <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
                     <input type="hidden" name="_method" value="PUT">
                     <input type="text" name="kpd" value="{{ user.kpd }}">
+            </td>
+            <td style="text-align: center; background-color: #f2f2f2;">
                     <button type="submit">Сохранить</button>
                 </form>
             </td>

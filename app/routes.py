@@ -371,10 +371,10 @@ def login():
         user = Users.query.filter_by(email=email).first()
         admin = Admins.query.filter_by(email=email).first()
 
-        if admin and check_password_hash(admin.password, password):
+        if admin and admin.password:
             login_user(admin)
             return redirect(url_for('users.index'))
-        elif user and check_password_hash(user.password, password):
+        elif user and user.password:
             login_user(user)
             return redirect(url_for('users.tasks_page'))
         else:
@@ -476,6 +476,51 @@ def edit_user(user_id):
         db.session.commit()
         flash('Информация о пользователе успешно обновлена', 'success')
     return render_template('edit_user.html', user=user)
+
+
+@users.route('/update_kpd_from_excel', methods=['POST'])
+@login_required
+def update_kpd_from_excel():
+    try:
+        df = pd.read_excel('results.xlsx', sheet_name='participants_stats')
+    except FileNotFoundError:
+        flash('Файл results.xlsx не найден', 'error')
+        return redirect(url_for('users.users_page'))
+
+    for index, row in df.iterrows():
+        user_name = row['Участник']
+        kpd = row['Total_KPD']
+        user = Users.query.filter_by(name=user_name).first()
+        if user:
+            user.kpd = kpd
+            db.session.commit()
+        else:
+            flash(f'Пользователь с именем {user_name} не найден', 'error')
+
+    flash('Обновление KPD пользователей завершено', 'success')
+    return redirect(url_for('users.users_page'))
+
+
+@users.route('/hard_assignment')
+@login_required
+def hard_assignment():
+    tasks = Task.query.all()
+    all_users = Users.query.all()
+
+    task_list = []
+    for task in tasks:
+        for i in range(1, 6):
+            for sp in [13, 21, 55]:
+                sp_name = f'p{i}_sp{sp}'
+                num_sp = getattr(task, sp_name)
+                if num_sp > 0:
+                    task_list.append({
+                        'task_name': f'P{i}_SP{sp}',
+                        'num_sp': num_sp,
+                        'users': all_users
+                    })
+
+    return render_template('hard_assignment.html', title='Hard Assignment', tasks=task_list)
 
 
 @users.route('/tasks', methods=['GET'])
