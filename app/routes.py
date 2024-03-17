@@ -2,14 +2,16 @@ from flask import render_template, redirect, url_for, flash, request, jsonify, c
 from flask_login import current_user, login_user, login_required, logout_user
 from __init__ import login_manager
 from .__init__ import users, tasks
-from .models import Users, Admins, db, Task, TaskAssignment
-from .forms import LoginForm, TaskForm
+from .models import Users, Admins, db, Task, TaskAssignment, UsersPro, TaskAssignmentPro, HardTasks, \
+    TaskAssignmentFinal, TaskPro
+from .forms import LoginForm, TaskForm, HardTask
 from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
 from math import ceil
 import pandas as pd
+import numpy as np
 
 results_data = pd.read_excel('results.xlsx', sheet_name='priority_sp_stats')
 
@@ -71,11 +73,9 @@ def calculate_project_duration(num_people, p1_sp0, p1_sp1, p1_sp2, p1_sp3, p1_sp
                                                                                                                0) +
                                 p5_sp13 * task_type_avg_time.get('P5_SP13', 0) + p5_sp21 * task_type_avg_time.get(
                                            'P5_SP21', 0) +
-                                p5_sp55 * task_type_avg_time.get('P5_SP55', 0)) / num_people) / 4
-
+                                p5_sp55 * task_type_avg_time.get('P5_SP55', 0)) / num_people) / 2.80
 
     project_duration = ceil(project_duration)
-
 
     return project_duration
 
@@ -286,10 +286,6 @@ def assign_tasks():
     return redirect(url_for('users.index'))
 
 
-import pandas as pd
-from math import ceil
-
-
 @users.route('/distribute_tasks_per_week', methods=['POST'])
 @login_required
 def distribute_tasks_per_week():
@@ -358,7 +354,7 @@ def update_task_assignment():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.get(int(user_id))
+    return Admins.query.get(int(user_id))
 
 
 @users.route('/login', methods=['GET', 'POST'])
@@ -371,10 +367,10 @@ def login():
         user = Users.query.filter_by(email=email).first()
         admin = Admins.query.filter_by(email=email).first()
 
-        if admin and admin.password:
+        if admin and admin.password == password:
             login_user(admin)
             return redirect(url_for('users.index'))
-        elif user and user.password:
+        elif user and user.password == password:
             login_user(user)
             return redirect(url_for('users.tasks_page'))
         else:
@@ -487,40 +483,290 @@ def update_kpd_from_excel():
         flash('Файл results.xlsx не найден', 'error')
         return redirect(url_for('users.users_page'))
 
+    all_users = Users.query.all()
+    for user in all_users:
+        user.kpd = 1
+        db.session.commit()
+
+    # Затем переписываем кпд для пользователей из results.xlsx
     for index, row in df.iterrows():
         user_name = row['Участник']
         kpd = row['Total_KPD']
+
+        # Поиск пользователя в таблице Users по имени
         user = Users.query.filter_by(name=user_name).first()
+
         if user:
+            # Обновление кпд пользователя в таблице Users
             user.kpd = kpd
             db.session.commit()
         else:
-            flash(f'Пользователь с именем {user_name} не найден', 'error')
+            continue
 
-    flash('Обновление KPD пользователей завершено', 'success')
+    # Добавление всех пользователей в таблицу UsersPro
+    for user in all_users:
+        user_pro = UsersPro.query.filter_by(name=user.name).first()
+
+        if not user_pro:
+            user_pro = UsersPro(name=user.name, email=user.email, password=user.password)
+            db.session.add(user_pro)
+            db.session.commit()
+        else:
+            # Если пользователь уже существует, обновляем email и пароль
+            user_pro.email = user.email
+            user_pro.password = user.password
+            db.session.commit()
+
+    # Обновление KPD для каждого пользователя в таблице UsersPro
+    for index, row in df.iterrows():
+        user_name = row['Участник']
+        kpd = row['Total_KPD']
+
+        user_pro = UsersPro.query.filter_by(name=user_name).first()
+
+        if user_pro:
+            user_pro.KPD_P1_SP1 = row.get('KPD_P1_SP1', 1)
+            user_pro.KPD_P2_SP0 = row.get('KPD_P2_SP0', 1)
+            user_pro.KPD_P2_SP1 = row.get('KPD_P2_SP1', 1)
+            user_pro.KPD_P2_SP2 = row.get('KPD_P2_SP2', 1)
+            user_pro.KPD_P2_SP3 = row.get('KPD_P2_SP3', 1)
+            user_pro.KPD_P2_SP5 = row.get('KPD_P2_SP5', 1)
+            user_pro.KPD_P3_SP0 = row.get('KPD_P3_SP0', 1)
+            user_pro.KPD_P3_SP1 = row.get('KPD_P3_SP1', 1)
+            user_pro.KPD_P3_SP2 = row.get('KPD_P3_SP2', 1)
+            user_pro.KPD_P3_SP3 = row.get('KPD_P3_SP3', 1)
+            user_pro.KPD_P3_SP5 = row.get('KPD_P3_SP5', 1)
+            user_pro.KPD_P3_SP8 = row.get('KPD_P3_SP8', 1)
+            user_pro.KPD_P4_SP0 = row.get('KPD_P4_SP0', 1)
+            user_pro.KPD_P4_SP1 = row.get('KPD_P4_SP1', 1)
+            user_pro.KPD_P4_SP2 = row.get('KPD_P4_SP2', 1)
+            user_pro.KPD_P4_SP3 = row.get('KPD_P4_SP3', 1)
+            user_pro.KPD_P4_SP5 = row.get('KPD_P4_SP5', 1)
+            user_pro.KPD_P4_SP8 = row.get('KPD_P4_SP8', 1)
+            user_pro.KPD_P4_SP13 = row.get('KPD_P4_SP13', 1)
+            user_pro.KPD_P4_SP55 = row.get('KPD_P4_SP55', 1)
+            user_pro.KPD_P5_SP1 = row.get('KPD_P5_SP1', 1)
+            user_pro.KPD_P5_SP2 = row.get('KPD_P5_SP2', 1)
+            user_pro.KPD_P5_SP5 = row.get('KPD_P5_SP5', 1)
+            user_pro.KPD_P5_SP3 = row.get('KPD_P5_SP3', 1)
+            user_pro.KPD_P5_SP8 = row.get('KPD_P5_SP8', 1)
+            # Заполните остальные атрибуты аналогичным образом
+            db.session.commit()
+        else:
+            flash(f'Пользователь с именем {user_name} не найден в таблице UsersPro', 'error')
+    all_users_pro = UsersPro.query.all()
+
+    for user_pro in all_users_pro:
+        if user_pro.KPD_P1_SP1 is None or np.isnan(user_pro.KPD_P1_SP1):
+            user_pro.KPD_P1_SP1 = 1
+        if user_pro.KPD_P2_SP0 is None or np.isnan(user_pro.KPD_P2_SP0):
+            user_pro.KPD_P2_SP0 = 1
+        if user_pro.KPD_P2_SP1 is None or np.isnan(user_pro.KPD_P2_SP1):
+            user_pro.KPD_P2_SP1 = 1
+        if user_pro.KPD_P2_SP2 is None or np.isnan(user_pro.KPD_P2_SP2):
+            user_pro.KPD_P2_SP2 = 1
+        if user_pro.KPD_P2_SP3 is None or np.isnan(user_pro.KPD_P2_SP3):
+            user_pro.KPD_P2_SP3 = 1
+        if user_pro.KPD_P2_SP5 is None or np.isnan(user_pro.KPD_P2_SP5):
+            user_pro.KPD_P2_SP5 = 1
+        if user_pro.KPD_P3_SP0 is None or np.isnan(user_pro.KPD_P3_SP0):
+            user_pro.KPD_P3_SP0 = 1
+        if user_pro.KPD_P3_SP1 is None or np.isnan(user_pro.KPD_P3_SP1):
+            user_pro.KPD_P3_SP1 = 1
+        if user_pro.KPD_P3_SP2 is None or np.isnan(user_pro.KPD_P3_SP2):
+            user_pro.KPD_P3_SP2 = 1
+        if user_pro.KPD_P3_SP3 is None or np.isnan(user_pro.KPD_P3_SP3):
+            user_pro.KPD_P3_SP3 = 1
+        if user_pro.KPD_P3_SP5 is None or np.isnan(user_pro.KPD_P3_SP5):
+            user_pro.KPD_P3_SP5 = 1
+        if user_pro.KPD_P3_SP8 is None or np.isnan(user_pro.KPD_P3_SP8):
+            user_pro.KPD_P3_SP8 = 1
+        if user_pro.KPD_P4_SP0 is None or np.isnan(user_pro.KPD_P4_SP0):
+            user_pro.KPD_P4_SP0 = 1
+        if user_pro.KPD_P4_SP1 is None or np.isnan(user_pro.KPD_P4_SP1):
+            user_pro.KPD_P4_SP1 = 1
+        if user_pro.KPD_P4_SP2 is None or np.isnan(user_pro.KPD_P4_SP2):
+            user_pro.KPD_P4_SP2 = 1
+        if user_pro.KPD_P4_SP3 is None or np.isnan(user_pro.KPD_P4_SP3):
+            user_pro.KPD_P4_SP3 = 1
+        if user_pro.KPD_P4_SP5 is None or np.isnan(user_pro.KPD_P4_SP5):
+            user_pro.KPD_P4_SP5 = 1
+        if user_pro.KPD_P4_SP8 is None or np.isnan(user_pro.KPD_P4_SP8):
+            user_pro.KPD_P4_SP8 = 1
+        if user_pro.KPD_P4_SP13 is None or np.isnan(user_pro.KPD_P4_SP13):
+            user_pro.KPD_P4_SP13 = 1
+        if user_pro.KPD_P4_SP55 is None or np.isnan(user_pro.KPD_P4_SP55):
+            user_pro.KPD_P4_SP55 = 1
+        if user_pro.KPD_P5_SP1 is None or np.isnan(user_pro.KPD_P5_SP1):
+            user_pro.KPD_P5_SP1 = 1
+        if user_pro.KPD_P5_SP2 is None or np.isnan(user_pro.KPD_P5_SP2):
+            user_pro.KPD_P5_SP2 = 1
+        if user_pro.KPD_P5_SP3 is None or np.isnan(user_pro.KPD_P5_SP3):
+            user_pro.KPD_P5_SP3 = 1
+        if user_pro.KPD_P5_SP5 is None or np.isnan(user_pro.KPD_P5_SP5):
+            user_pro.KPD_P5_SP5 = 1
+        if user_pro.KPD_P5_SP8 is None or np.isnan(user_pro.KPD_P5_SP8):
+            user_pro.KPD_P5_SP8 = 1
+        db.session.commit()
+
     return redirect(url_for('users.users_page'))
 
 
-@users.route('/hard_assignment')
+@users.route('/vacation_page/<int:user_id>', methods=['GET', 'POST'])
 @login_required
-def hard_assignment():
+def vacation_page(user_id):
+    user_pro = UsersPro.query.get(user_id)
+    if not user_pro:
+        flash('Пользователь не найден', 'error')
+        return redirect(url_for('users.users_page'))
+
+    user = Users.query.get(user_id)
+
+    if request.method == 'POST':
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+
+        user_pro.vacation_start = start_date
+        user_pro.vacation_end = end_date
+        db.session.commit()
+
+        flash('Даты отпуска успешно сохранены', 'success')
+        return render_template('vacation_page.html', user_id=user_id, user=user, start_date=start_date, end_date=end_date)
+
+    start_date = user_pro.vacation_start
+    end_date = user_pro.vacation_end
+
+    return render_template('vacation_page.html', user_id=user_id, user=user, start_date=start_date, end_date=end_date)
+
+
+@users.route('/assign_hard_tasks', methods=['GET', 'POST'])
+@login_required
+def insert_hard_tasks():
+    HardTasks.query.filter_by(assigned=False).delete()
+
     tasks = Task.query.all()
-    all_users = Users.query.all()
 
-    task_list = []
     for task in tasks:
-        for i in range(1, 6):
-            for sp in [13, 21, 55]:
-                sp_name = f'p{i}_sp{sp}'
-                num_sp = getattr(task, sp_name)
-                if num_sp > 0:
-                    task_list.append({
-                        'task_name': f'P{i}_SP{sp}',
-                        'num_sp': num_sp,
-                        'users': all_users
-                    })
+        for column in task.__table__.columns:
+            if column.name in ['p1_sp13', 'p1_sp21', 'p1_sp55', 'p2_sp13', 'p2_sp21', 'p2_sp55', 'p3_sp13',
+                               'p3_sp21', 'p3_sp55', 'p4_sp13', 'p4_sp21', 'p4_sp55', 'p5_sp13', 'p5_sp21', 'p5_sp55']:
+                priority_value = getattr(task, column.name)
+                if priority_value > 0:
+                    existing_true_count = HardTasks.query.filter_by(task_id=task.id, task_name=column.name,
+                                                                    assigned=True).count()
+                    remaining_priority_value = max(0, priority_value - existing_true_count)
 
-    return render_template('hard_assignment.html', title='Hard Assignment', tasks=task_list)
+                    for _ in range(remaining_priority_value):
+                        hard_task = HardTasks(task_id=task.id, task_name=column.name, assigned=False)
+                        db.session.add(hard_task)
+
+    db.session.commit()
+
+    hard_tasks = HardTasks.query.all()
+    users_pro = UsersPro.query.all()
+
+    return render_template('assign_hard_tasks.html', hard_tasks=hard_tasks, users_pro=users_pro)
+
+
+@users.route('/final_assign_hard_task/<int:hard_task_id>', methods=['GET', 'POST'])
+@login_required
+def final_assign_hard_task(hard_task_id):
+    hard_task = HardTasks.query.get_or_404(hard_task_id)
+    users = UsersPro.query.all()
+
+    if request.method == 'POST':
+        user_id = request.form.get('user')
+        hours = request.form.get('hours')
+
+        existing_assignment = TaskAssignmentPro.query.filter_by(hard_task_id=hard_task_id).first()
+
+        if existing_assignment:
+            db.session.delete(existing_assignment)
+            db.session.commit()
+
+        task_assignment = TaskAssignmentPro(
+            task_id=hard_task.task_id,
+            hard_task_id=hard_task_id,
+            task_name=hard_task.task_name,
+            user_id=user_id,
+            hours=hours
+        )
+
+        db.session.add(task_assignment)
+        db.session.commit()
+
+        hard_task.assigned = True
+        db.session.commit()
+
+        flash('Task assigned successfully!', 'success')
+        return render_template('final_assign_hard_task.html', hard_task=hard_task, users=users)
+
+    return render_template('final_assign_hard_task.html', hard_task=hard_task, users=users)
+
+
+@users.route('/delete_hard_assignment/<int:hard_task_id>', methods=['POST'])
+@login_required
+def delete_hard_assignment(hard_task_id):
+    assignment = TaskAssignmentPro.query.filter_by(hard_task_id=hard_task_id).first()
+
+    if assignment:
+        db.session.delete(assignment)
+        db.session.commit()
+
+        hard_task = HardTasks.query.get_or_404(hard_task_id)
+        hard_task.assigned = False
+        db.session.commit()
+
+    hard_tasks = HardTasks.query.all()
+
+    return render_template('assign_hard_tasks.html', hard_tasks=hard_tasks)
+
+
+@users.route('/assign_tasks_final', methods=['POST'])
+@login_required
+def assign_tasks_final():
+    # Получение всех заданий из таблицы TaskAssignment и TaskAssignmentPro
+    TaskAssignmentPro.query.delete()
+    task_assignments = TaskAssignment.query.all()
+    task_assignments_pro = TaskAssignmentPro.query.all()
+
+    # Перебор всех заданий из TaskAssignment и TaskAssignmentPro
+    for task_assignment in task_assignments:
+        # Создание записи в таблице TaskAssignmentFinal на основе TaskAssignment
+        task_assignment_final = TaskAssignmentFinal(
+            task_id=task_assignment.task_id,
+            task_name=task_assignment.task_name,
+            user_id=task_assignment.user_id,
+            week_num=task_assignment.week_num,
+            assigned=task_assignment.assigned,
+            done=task_assignment.done,
+            hours=task_assignment.hours,
+            deadline=task_assignment.deadline
+        )
+
+        # Сохранение записи в базе данных
+        db.session.add(task_assignment_final)
+
+    # Перебор всех заданий из TaskAssignmentPro
+    for task_assignment_pro in task_assignments_pro:
+        # Создание записи в таблице TaskAssignmentFinal на основе TaskAssignmentPro
+        task_assignment_final_pro = TaskAssignmentFinal(
+            task_id=task_assignment_pro.task_id,
+            task_name=task_assignment_pro.task_name,
+            user_id=task_assignment_pro.user_id,
+            assigned=task_assignment_pro.assigned,
+            done=task_assignment_pro.done,
+            hours=task_assignment_pro.hours
+        )
+
+        # Сохранение записи в базе данных
+        db.session.add(task_assignment_final_pro)
+
+    # Фиксация изменений
+    db.session.commit()
+
+    # Возврат сообщения о завершении операции
+    return "Tasks assigned successfully!"
 
 
 @users.route('/tasks', methods=['GET'])

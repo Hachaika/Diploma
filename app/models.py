@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from __init__ import db
+from sqlalchemy.orm import relationship
 
 
 class Users(UserMixin, db.Model):
@@ -94,3 +95,80 @@ class TaskAssignment(db.Model):
     task = db.relationship('Task', back_populates='assignments')
     user = db.relationship('Users', back_populates='assigned_tasks')
 
+
+class UsersPro(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True)
+    password = db.Column(db.String(10000))
+    name = db.Column(db.String(1000))
+    KPD_P1_SP1 = db.Column(db.Float)
+    KPD_P2_SP0 = db.Column(db.Float)
+    KPD_P2_SP1 = db.Column(db.Float)
+    KPD_P2_SP2 = db.Column(db.Float)
+    KPD_P2_SP3 = db.Column(db.Float)
+    KPD_P2_SP5 = db.Column(db.Float)
+    KPD_P3_SP0 = db.Column(db.Float)
+    KPD_P3_SP1 = db.Column(db.Float)
+    KPD_P3_SP2 = db.Column(db.Float)
+    KPD_P3_SP3 = db.Column(db.Float)
+    KPD_P3_SP5 = db.Column(db.Float)
+    KPD_P3_SP8 = db.Column(db.Float)
+    KPD_P4_SP0 = db.Column(db.Float)
+    KPD_P4_SP1 = db.Column(db.Float)
+    KPD_P4_SP2 = db.Column(db.Float)
+    KPD_P4_SP3 = db.Column(db.Float)
+    KPD_P4_SP5 = db.Column(db.Float)
+    KPD_P4_SP8 = db.Column(db.Float)
+    KPD_P4_SP13 = db.Column(db.Float)
+    KPD_P4_SP55 = db.Column(db.Float)
+    KPD_P5_SP1 = db.Column(db.Float)
+    KPD_P5_SP2 = db.Column(db.Float)
+    KPD_P5_SP3 = db.Column(db.Float)
+    KPD_P5_SP8 = db.Column(db.Float)
+    KPD_P5_SP5 = db.Column(db.Float)
+    vacation_start = db.Column(db.Date)
+    vacation_end = db.Column(db.Date)
+
+
+class HardTasks(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    task_name = db.Column(db.String)
+    assigned = db.Column(db.Boolean, default=True)
+
+    task_assignment_pro = relationship('TaskAssignmentPro', back_populates='hard_task')
+
+
+class TaskAssignmentPro(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    hard_task_id = db.Column(db.Integer, db.ForeignKey('hard_tasks.id'))
+    task_name = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users_pro.id'))
+    assigned = db.Column(db.Boolean, default=True)
+    done = db.Column(db.Boolean, default=False)
+    hours = db.Column(db.Float)
+
+    hard_task = relationship('HardTasks', back_populates='task_assignment_pro')
+
+    user = relationship('UsersPro')
+
+
+class TaskAssignmentFinal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    task_name = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users_pro.id'))
+    week_num = db.Column(db.Integer)
+    assigned = db.Column(db.Boolean, default=True)
+    done = db.Column(db.Boolean, default=False)
+    hours = db.Column(db.Float)
+    deadline = db.Column(db.DateTime)
+
+
+class TaskPro(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    project_duration = db.Column(db.Float)
+    start_project_date = db.Column(db.Date)
+    ending_project_date = db.Column(db.Date)

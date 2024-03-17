@@ -258,9 +258,10 @@
             <td>{{ task.p4_sp13 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp13 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-                <form action="{{ url_for('users.hard_assignment') }}" method="get">
-                <button type="submit">Распределение сложных задач</button>
-            </form>
+                <form method="post" action="{{ url_for('users.insert_hard_tasks') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Ручное распределение <br>сложных заданий</button>
+                </form>
             </td>
         </tr>
         <tr>
@@ -272,7 +273,12 @@
             <td style="background:#bbbbbb">{{ task.p3_sp21 }}</td>
             <td style="background:#bbbbbb">{{ task.p4_sp21 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp21 }}</td>
-            <td style="text-align: center; background-color: #f2f2f2;"></td>
+            <td style="text-align: center; background-color: #f2f2f2;">
+                <form method="post" action="{{ url_for('users.assign_tasks_final') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Добавить все <br>распределения</button>
+                </form>
+            </td>
         </tr>
         <tr>
         <td></td>
@@ -286,6 +292,53 @@
             <td style="text-align: center; background-color: #f2f2f2;"></td>
         </tr>
         {% endfor %}
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        <tr>
+            <th colspan="9" style="text-align: center;">Рассчеты с учетом КПД работников и календаря отпусков</th>
+        </tr>
+        <tr>
+            <th>Примерное количество рабочих дней</th>
+            <td></td>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        <tr>
+            <th>Дата начала</th>
+            <td></td>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+        <tr>
+            <th>Дата окончания</th>
+            <td></td>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
         <tr>
             <th></th>
             <th></th>

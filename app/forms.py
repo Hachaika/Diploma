@@ -72,3 +72,9 @@ class UsersForm(FlaskForm):
     kpd = FloatField("КПД")
     submit = SubmitField('Submit')
 
+
+class HardTask(FlaskForm):
+    id = IntegerField("Id")
+    time = IntegerField("Часы для выполнения")
+    name = StringField("Имя и Фамилия")
+    submit = SubmitField('Сохранить')

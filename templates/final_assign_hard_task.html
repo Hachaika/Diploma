@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Task</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Назначение сложных заданий пользователю</h1>
+    <table>
+        <tr>
+            <th>Задание</th>
+            <th>Назначено</th>
+            <th>Действия</th>
+        </tr>
+        <tr>
+            <td>{{ hard_task.task_name }}</td>
+            <td>{{ "Да" if hard_task.assigned else "Нет" }}</td>
+            <td>
+                <form action="{{ url_for('users.final_assign_hard_task', hard_task_id=hard_task.id) }}" method="post">
+                    <div>
+                        <label for="user">Выбор пользователя:</label>
+                        <select name="user" id="user">
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <br>
+                    <div>
+                        <label for="hours">Требуется часов для выполнения:</label>
+                        <input type="number" name="hours" id="hours"  placeholder="0" required>
+                    </div>
+                    <br>
+                    <button type="submit" class="assign-btn">Назначить задание</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+    <br>
+<form action="{{ url_for('users.insert_hard_tasks') }}" method="get">
+        <button type="submit">Вернуться к таблице назначения</button>
+</form>
+</body>
+</html>
+
+<style>
+    h1 {
+        text-align: center;
+        text-decoration: underline;
+    }
+
+    body {
+        text-align: center;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 50%;
+        margin: auto;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    form {
+        display: inline;
+    }
+</style>

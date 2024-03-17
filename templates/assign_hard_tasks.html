@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Hard Tasks Table</title>
+    <style>
+        h1 {
+            text-align: center;
+            text-decoration: underline;
+        }
+
+        body {
+            text-align: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .assigned-true {
+            background-color: #8ec98d;
+        }
+
+        .assigned-false {
+            background-color: #e8a7a7;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Назначение сложных заданий</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Задание</th>
+                <th>Кому назначено</th> <!-- Добавлен новый столбец -->
+                <th>Действия</th>
+                <th>Назначено</th>
+                <th>Время назначения (часы)</th> <!-- Новый столбец -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for hard_task in hard_tasks %}
+            <tr>
+                <td>{{ hard_task.task_name }}</td>
+                <td>
+                    {% if hard_task.task_assignment_pro %}
+                        {% if hard_task.task_assignment_pro|length > 0 %}
+                            {{ hard_task.task_assignment_pro[0].user.name }}
+                        {% else %}
+                            Не назначено
+                        {% endif %}
+                    {% else %}
+                        Не назначено
+                    {% endif %}
+                </td>
+
+                <td>
+                    <form action="{{ url_for('users.final_assign_hard_task', hard_task_id=hard_task.id) }}" method="get">
+                        <button type="submit">Назначить</button>
+                    </form>
+                    {% if hard_task.assigned %}
+                    <br>
+                    <form action="{{ url_for('users.delete_hard_assignment', hard_task_id=hard_task.id) }}" method="post">
+                        <button type="submit">Удалить назначение</button>
+                    </form>
+                    {% endif %}
+                </td>
+                <td class="{% if hard_task.assigned %}assigned-true{% else %}assigned-false{% endif %}">{% if hard_task.assigned %}
+                    Да
+                {% else %}
+                    Нет
+                {% endif %}
+                </td>
+                <td>{{ hard_task.task_assignment_pro[0].hours if hard_task.task_assignment_pro and hard_task.task_assignment_pro|length > 0 else 'Не назначено' }}</td> <!-- Новый столбец -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+    <br>
+    <form action="{{ url_for('users.index') }}" method="get">
+        <button type="submit">Вернуться к форме проекта</button>
+    </form>
+</body>
+</html>
