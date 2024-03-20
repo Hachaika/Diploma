@@ -12,6 +12,11 @@ from sqlalchemy import func
 from math import ceil
 import pandas as pd
 import numpy as np
+from openpyxl import load_workbook
+import logging
+from itertools import cycle
+import math
+import datetime
 
 results_data = pd.read_excel('results.xlsx', sheet_name='priority_sp_stats')
 
@@ -73,7 +78,7 @@ def calculate_project_duration(num_people, p1_sp0, p1_sp1, p1_sp2, p1_sp3, p1_sp
                                                                                                                0) +
                                 p5_sp13 * task_type_avg_time.get('P5_SP13', 0) + p5_sp21 * task_type_avg_time.get(
                                            'P5_SP21', 0) +
-                                p5_sp55 * task_type_avg_time.get('P5_SP55', 0)) / num_people) / 2.80
+                                p5_sp55 * task_type_avg_time.get('P5_SP55', 0)) / num_people) / 2.32
 
     project_duration = ceil(project_duration)
 
@@ -91,12 +96,12 @@ def calculate_date(start_date, project_duration):
     workdays_count = 0
     current_day = start_date_dt
 
-    while workdays_count < project_duration:
+    while workdays_count <= project_duration:
         if current_day.weekday() not in [5, 6]:
             workdays_count += 1
         current_day += timedelta(days=1)
 
-    end_date = current_day - timedelta(days=1)
+    end_date = current_day
 
     return end_date.strftime('%Y-%m-%d')
 
@@ -256,41 +261,12 @@ def edit_project(task_id):
     return render_template('edit_project.html', title='Изменение проекта', form=form, task=task)
 
 
-@users.route('/assign_tasks', methods=['POST'])
+@users.route('/assign_and_distribute_tasks', methods=['POST'])
 @login_required
-def assign_tasks():
+def assign_and_distribute_tasks():
     tasks = Task.query.all()
     users = Users.query.all()
-
-    for task in tasks:
-        for i in range(1, 6):
-            for j in [8, 5, 3, 2, 1, 0]:
-                task_name = f"p{i}_sp{j}"
-                current_assignments_count = TaskAssignment.query.filter_by(task_id=task.id, task_name=task_name).count()
-                total_assignments_count = getattr(task, task_name)
-                if current_assignments_count < total_assignments_count:
-                    assignments_to_add = total_assignments_count - current_assignments_count
-                    user_index = 0
-                    for _ in range(assignments_to_add):
-                        user = users[user_index % len(users)]
-                        new_assignment = TaskAssignment(
-                            task_name=task_name,
-                            task_id=task.id,
-                            user_id=user.id,
-                            deadline=task.ending_project_date
-                        )
-                        db.session.add(new_assignment)
-                        user_index += 1
-
-    db.session.commit()
-    return redirect(url_for('users.index'))
-
-
-@users.route('/distribute_tasks_per_week', methods=['POST'])
-@login_required
-def distribute_tasks_per_week():
-    users = Users.query.all()
-    hours_per_week = 20
+    hours_per_week = 11.6
 
     # Чтение данных из файла Excel
     task_durations_data = pd.read_excel('results.xlsx', sheet_name='priority_sp_stats')
@@ -304,6 +280,29 @@ def distribute_tasks_per_week():
         if sp not in [13, 21, 55]:
             task_durations[task_type] = row['Среднее время выполнения в часах']
 
+    # Создаем цикл пользователей, чтобы равномерно распределить задачи между ними
+    users_cycle = cycle(users)
+
+    for task in tasks:
+        for i in range(1, 6):
+            for j in [8, 5, 3, 2, 1, 0]:
+                task_name = f"p{i}_sp{j}"
+                current_assignments_count = TaskAssignment.query.filter_by(task_id=task.id, task_name=task_name).count()
+                total_assignments_count = getattr(task, task_name)
+                if current_assignments_count < total_assignments_count:
+                    assignments_to_add = total_assignments_count - current_assignments_count
+                    for _ in range(assignments_to_add):
+                        user = next(users_cycle)
+                        new_assignment = TaskAssignment(
+                            task_name=task_name,
+                            task_id=task.id,
+                            user_id=user.id,
+                            start=task.start_project_date,
+                            deadline=task.ending_project_date
+                        )
+                        db.session.add(new_assignment)
+
+    # Разбиваем задачи по неделям
     for user in users:
         user_assignments = TaskAssignment.query.filter_by(user_id=user.id).order_by(TaskAssignment.deadline).all()
         remaining_hours = hours_per_week
@@ -313,21 +312,17 @@ def distribute_tasks_per_week():
             task_name = assignment.task_name
             task_hours = task_durations.get(task_name, 0)
 
+            weeks_needed = ceil(task_hours / hours_per_week)
+            assignment.week_num = week_num + weeks_needed - 1
             if task_hours > remaining_hours:
-                weeks_needed = ceil(task_hours / hours_per_week)
                 assignment.hours = remaining_hours
-                assignment.week_num = week_num
-                remaining_hours = 0
-                task_hours -= remaining_hours
+                remaining_hours = hours_per_week * weeks_needed - task_hours % hours_per_week
                 week_num += weeks_needed
             else:
                 assignment.hours = task_hours
-                assignment.week_num = week_num
                 remaining_hours -= task_hours
-                task_hours = 0
 
-            db.session.commit()
-
+    db.session.commit()
     return redirect(url_for('users.index'))
 
 
@@ -354,7 +349,10 @@ def update_task_assignment():
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Admins.query.get(int(user_id))
+    if Admins.query.get(int(user_id)):
+        return Admins.query.get(int(user_id))
+    else:
+        return Users.query.get(int(user_id))
 
 
 @users.route('/login', methods=['GET', 'POST'])
@@ -725,52 +723,114 @@ def delete_hard_assignment(hard_task_id):
 @users.route('/assign_tasks_final', methods=['POST'])
 @login_required
 def assign_tasks_final():
-    # Получение всех заданий из таблицы TaskAssignment и TaskAssignmentPro
-    TaskAssignmentPro.query.delete()
-    task_assignments = TaskAssignment.query.all()
-    task_assignments_pro = TaskAssignmentPro.query.all()
+    # Чтение данных о продолжительности заданий из файла Excel
+    task_durations_data = pd.read_excel('results.xlsx', sheet_name='priority_sp_stats')
+    # Преобразование данных в словарь
+    task_durations = {}
+    for index, row in task_durations_data.iterrows():
+        priority = row['Приоритет'].lower()
+        sp = row['Сложность в SP']
+        task_type = f"{priority}_sp{sp}"
+        if sp not in [13, 21, 55]:
+            task_durations[task_type] = row['Среднее время выполнения в часах']
 
-    # Перебор всех заданий из TaskAssignment и TaskAssignmentPro
-    for task_assignment in task_assignments:
-        # Создание записи в таблице TaskAssignmentFinal на основе TaskAssignment
-        task_assignment_final = TaskAssignmentFinal(
-            task_id=task_assignment.task_id,
-            task_name=task_assignment.task_name,
-            user_id=task_assignment.user_id,
-            week_num=task_assignment.week_num,
-            assigned=task_assignment.assigned,
-            done=task_assignment.done,
-            hours=task_assignment.hours,
-            deadline=task_assignment.deadline
+    # Получение списка всех заданий из таблицы TaskAssignment
+    tasks = TaskAssignment.query.all()
+
+    # Проходимся по каждому заданию из TaskAssignment и добавляем его в TaskAssignmentFinal
+    for task in tasks:
+        new_task_final = TaskAssignmentFinal(
+            task_id=task.task_id,
+            task_name=task.task_name,
+            assigned=False
         )
+        db.session.add(new_task_final)
 
-        # Сохранение записи в базе данных
-        db.session.add(task_assignment_final)
+    # Получение списка всех пользователей из таблицы UsersPro
+    users = UsersPro.query.all()
 
-    # Перебор всех заданий из TaskAssignmentPro
-    for task_assignment_pro in task_assignments_pro:
-        # Создание записи в таблице TaskAssignmentFinal на основе TaskAssignmentPro
-        task_assignment_final_pro = TaskAssignmentFinal(
-            task_id=task_assignment_pro.task_id,
-            task_name=task_assignment_pro.task_name,
-            user_id=task_assignment_pro.user_id,
-            assigned=task_assignment_pro.assigned,
-            done=task_assignment_pro.done,
-            hours=task_assignment_pro.hours
-        )
+    # Переменная для отслеживания предыдущей назначенной недели для каждого пользователя
+    previous_weeks = {}
 
-        # Сохранение записи в базе данных
-        db.session.add(task_assignment_final_pro)
+    # Расчет общего количества часов работы
+    total_hours_required = sum(task_durations.values())
 
-    # Фиксация изменений
-    db.session.commit()
+    # Проверяем, что общее количество часов больше нуля, прежде чем делить
+    if total_hours_required > 0:
+        # Расчет количества рабочих часов в неделю для каждого пользователя
+        weekly_hours_per_user = total_hours_required / len(users)
 
-    # Возврат сообщения о завершении операции
-    return "Tasks assigned successfully!"
+        # Рассчитываем количество недель, необходимых для выполнения всех заданий
+        total_weeks_required = math.ceil(total_hours_required / (weekly_hours_per_user * len(users)))
+
+        # Создаем список заданий для каждого типа
+        tasks_by_type = {task_type: [] for task_type in task_durations.keys()}
+
+        # Группируем задания по типу
+        for task_final in TaskAssignmentFinal.query.all():
+            tasks_by_type[task_final.task_name].append(task_final)
+
+        # Создаем словарь для хранения пользователей и их КПД
+        users_kpd = {user.id: user for user in users}
+
+        # Начинаем с первого пользователя
+        current_user_index = 0
+
+        # Проходимся по каждому типу заданий по приоритетам
+        for task_type in sorted(tasks_by_type.keys()):
+            tasks = tasks_by_type[task_type]
+            users_with_kpd = [(user.id, getattr(user, f"KPD_{task_type}".upper(), 0)) for user in users]
+
+            # Сортируем пользователей по КПД
+            users_with_kpd.sort(key=lambda x: x[1], reverse=True)
+
+            # Проходимся по заданиям этого типа
+            for task_final in tasks:
+                # Если задание уже назначено, пропускаем его
+                if task_final.assigned:
+                    continue
+
+                # Получаем пользователя для назначения задания
+                user_id, _ = users_with_kpd[current_user_index]
+                current_user_index = (current_user_index + 1) % len(users_with_kpd)
+
+                # Получаем количество часов, необходимых для выполнения этого типа задания
+                hours_required = task_durations.get(task_type, 0)
+
+                # Находим следующую доступную неделю для назначения задания
+                next_week = previous_weeks.get(user_id, 0) + 1
+
+                # Обновляем данные задания в таблице TaskAssignmentFinal
+                task_final.assigned = True
+                task_final.hours = hours_required
+                task_final.week_num = next_week
+                task_final.user_id = user_id
+
+                db.session.commit()
+
+                # Обновляем значение предыдущей назначенной недели для этого пользователя
+                previous_weeks[user_id] = next_week
+
+        # Получение списка всех заданий из таблицы TaskAssignmentPro
+        tasks_pro = TaskAssignmentPro.query.all()
+
+        # Проходимся по каждому заданию из TaskAssignmentPro и добавляем его в TaskAssignmentFinal
+        for task_pro in tasks_pro:
+            new_pro_task_final = TaskAssignmentFinal(
+                task_id=task_pro.task_id,
+                task_name=task_pro.task_name,
+                user_id=task_pro.user_id,
+                assigned=task_pro.assigned,
+                hours=task_pro.hours
+            )
+            db.session.add(new_pro_task_final)
+
+            db.session.commit()
+
+        return "Tasks assigned successfully!"
 
 
 @users.route('/tasks', methods=['GET'])
-@login_required
 def tasks_page():
     form = TaskForm()
 

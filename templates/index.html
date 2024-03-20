@@ -193,10 +193,7 @@
             <td>{{ task.p4_sp2 }}</td>
             <td>{{ task.p5_sp2 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-                <form method="post" action="{{ url_for('users.assign_tasks') }}">
-                    {{ form.csrf_token }}
-                    <button type="submit" class="btn btn-primary">Распределить задания</button>
-                </form>
+
             </td>
         </tr>
         <tr>
@@ -210,7 +207,7 @@
             <td>{{ task.p4_sp3 }}</td>
             <td>{{ task.p5_sp3 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-                <form method="post" action="{{ url_for('users.distribute_tasks_per_week') }}">
+                <form method="post" action="{{ url_for('users.assign_and_distribute_tasks') }}">
                     {{ form.csrf_token }}
                     <button type="submit" class="btn btn-primary">Распределить задания <br>по неделям</button>
                 </form>

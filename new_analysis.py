@@ -53,8 +53,9 @@ json_path = 'C:/Users/vippo/OneDrive/Рабочий стол/diploma/all_redmine
 with open(json_path, 'r', encoding='utf-8') as file:
     data = json.load(file)
 
+start_date_limit = datetime(2023, 1, 7)
 # Фильтрация задач, созданных после 2022-12-31
-filtered_data = [event for event in data if 'created_on' in event and parse_datetime(event['created_on'])]
+filtered_data = [event for event in data if 'created_on' in event and parse_datetime(event['created_on']) >= start_date_limit]
 
 # Обработка событий
 timeline, unique_people = process_events(filtered_data)

@@ -90,6 +90,7 @@ class TaskAssignment(db.Model):
     assigned = db.Column(db.Boolean, default=True)
     done = db.Column(db.Boolean, default=False)
     hours = db.Column(db.Float)
+    start = db.Column(db.DateTime, nullable=False)
     deadline = db.Column(db.DateTime, nullable=False)
 
     task = db.relationship('Task', back_populates='assignments')
