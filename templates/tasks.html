@@ -1,5 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+
+    table {
+        border-collapse: collapse;
+        width: 50%;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+</style>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,28 +25,53 @@
 <body>
     <header>
         <h1>Страница заданий</h1>
+        <div style="position: absolute; top: 50px; right: 50px; padding: 5px; background-color: #98eba6; border-radius: 10px 20px; font-size: 1.25em">
+            &nbsp Дата начала &nbsp | &nbsp<b>{{ start_project_date }}</b>&nbsp
+            <br>
+            -------------------------------------
+            <br>
+            &nbsp &nbsp &nbsp Неделя  &nbsp &nbsp &nbsp | &nbsp &nbsp &nbsp &nbsp &nbsp<b>{{ current_week_number }}</b>&nbsp
+        </div>
     </header>
 
     <main>
         {% if current_user.is_authenticated %}
-            <p>Добро пожаловать, {{ current_user.name }}!</p>
+            <p style="font-size: 1.25em">Добро пожаловать, {{ current_user.name }}!</p>
 
             <h2>Ваши задания:</h2>
             <form method="POST" action="{{ url_for('users.update_task_assignment') }}">
                 {{ form.csrf_token }}
-                <ul>
-                    {% for assignment in current_user.assigned_tasks %}
-                        <li>
-                            <input type="checkbox" name="task_assignment_{{ assignment.id }}" id="task_assignment_{{ assignment.id }}" {% if assignment.done %}checked{% endif %}>
-                            <label for="task_assignment_{{ assignment.id }}">{{ assignment.task_name }} for Week {{ assignment.week_num }}</label>
-                            <input type="hidden" name="assignment_id_{{ assignment.id }}" value="{{ assignment.id }}">
-                        </li>
-                    {% endfor %}
-                </ul>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Задание</th>
+                            <th>Неделя - дедлайн</th>
+                            <th>Выполнено</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assignment in tasks %}
+                        <tr>
+                            <td>{{ assignment.task_name }}</td>
+                            <td>{{ assignment.week_num }}</td>
+                            <td>
+                                {% if assignment.done %}
+                                <input type="checkbox" name="task_assignment_{{ assignment.id }}" id="checkbox_{{ assignment.id }}" checked>
+                                {% else %}
+                                <input type="checkbox" name="task_assignment_{{ assignment.id }}" id="checkbox_{{ assignment.id }}">
+                                {% endif %}
+                                <input type="hidden" name="assignment_id_{{ assignment.id }}" value="{{ assignment.id }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <br>
                 <button type="submit">Обновить состояние заданий</button>
                 <br>
                 <br>
             </form>
+
             <form method="POST" action="{{ url_for('users.logout') }}">
                 {{ form.csrf_token }}
                 {{ form.submit(class="btn btn-danger", value="Выход") }}
@@ -49,5 +91,6 @@
             <p>Пожалуйста, войдите, чтобы просмотреть свои задания.</p>
         {% endif %}
     </main>
+
 </body>
 </html>

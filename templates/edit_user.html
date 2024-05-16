@@ -60,7 +60,7 @@
             <td>
                 <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
                     <input type="hidden" name="_method" value="PUT">
-                    <input type="text" name="password" value="{{ user.password }}">
+                    <input type="text" name="password" value="{{ user.password }}" minlength="4" maxlength="100">
             </td>
             <td style="text-align: center; background-color: #f2f2f2;">
                     <button type="submit">Сохранить</button>
@@ -80,11 +80,11 @@
             </td>
         </tr>
         <tr>
-            <td><b>КПД:</b></td>
+            <td><b>КСВЗ:</b></td>
             <td>
                 <form action="{{ url_for('users.edit_user', user_id=user.id) }}" method="post">
                     <input type="hidden" name="_method" value="PUT">
-                    <input type="text" name="kpd" value="{{ user.kpd }}">
+                    <input type="text" name="ksvz" value="{{ user.kpd }}">
             </td>
             <td style="text-align: center; background-color: #f2f2f2;">
                     <button type="submit">Сохранить</button>

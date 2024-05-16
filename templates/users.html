@@ -44,7 +44,7 @@
             <th>Почта</th>
             <th>Пароль</th>
             <th>Имя и фамилия</th>
-            <th>КПД</th>
+            <th>Коэффициент скорости <br> выполнения заданий</th>
             <th colspan="3" style="text-align: center;">Действия</th>
         </tr>
         {% for user in users %}
@@ -77,7 +77,7 @@
                 <td><input type="text" name="email" placeholder="Почта"></td>
                 <td><input type="text" name="password" placeholder="Пароль"></td>
                 <td><input type="text" name="name" placeholder="Имя и Фамилия"></td>
-                <td><input type="text" name="kpd" placeholder="КПД"></td>
+                <td><input type="text" name="kpd" placeholder="КСВЗ"></td>
                 <td style="text-align: center; background-color: #f2f2f2;"><button type="submit">Добавить</button></td>
                 <td style="text-align: center; background-color: #f2f2f2;"></td>
                 <td style="text-align: center; background-color: #f2f2f2;"></td>
@@ -87,12 +87,22 @@
     <br>
     <br>
     <form action="{{ url_for('users.update_kpd_from_excel') }}" method="post">
-        <button type="submit">Распределение КПД из бд</button>
+        <button type="submit">Распределение КСВЗ из бд</button>
     </form>
     <br>
     <br>
     <form action="{{ url_for('users.index') }}" method="get">
         <button type="submit">Вернуться к форме проекта</button>
     </form>
+<br>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 </body>
 </html>

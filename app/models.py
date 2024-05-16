@@ -75,7 +75,8 @@ class Task(db.Model):
     p5_sp21 = db.Column(db.Integer, default=0)
     p5_sp55 = db.Column(db.Integer, default=0)
 
-    assignments = db.relationship('TaskAssignment', back_populates='task')
+    assignments = db.relationship('TaskAssignment', cascade='all, delete-orphan', back_populates='task')
+    hard_tasks = relationship('HardTasks', cascade='all, delete-orphan', backref='task')
 
     def __repr__(self):
         return f'<Task {self.id}>'

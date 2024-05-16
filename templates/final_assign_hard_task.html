@@ -20,7 +20,7 @@
             <td>
                 <form action="{{ url_for('users.final_assign_hard_task', hard_task_id=hard_task.id) }}" method="post">
                     <div>
-                        <label for="user">Выбор пользователя:</label>
+                        <label for="user">Выбор пользователя: &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp </label>
                         <select name="user" id="user">
                             {% for user in users %}
                                 <option value="{{ user.id }}">{{ user.name }}</option>

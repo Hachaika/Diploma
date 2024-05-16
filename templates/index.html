@@ -86,7 +86,7 @@
                 <td style="background:#bbbbbb">{{ form.p1_sp13(placeholder="Задания P1 SP 13") }}</td>
                 <td style="background:#bbbbbb">{{ form.p2_sp13(placeholder="Задания P2 SP 13") }}</td>
                 <td style="background:#bbbbbb">{{ form.p3_sp13(placeholder="Задания P3 SP 13") }}</td>
-                <td>{{ form.p4_sp13(placeholder="Задания P4 SP 13") }}</td>
+                <td style="background:#bbbbbb">{{ form.p4_sp13(placeholder="Задания P4 SP 13") }}</td>
                 <td style="background:#bbbbbb">{{ form.p5_sp13(placeholder="Задания P5 SP 13") }}</td>
             </tr>
             <tr>
@@ -102,7 +102,7 @@
                 <td style="background:#bbbbbb">{{ form.p1_sp55(placeholder="Задания P1 SP 55") }}</td>
                 <td style="background:#bbbbbb">{{ form.p2_sp55(placeholder="Задания P2 SP 55") }}</td>
                 <td style="background:#bbbbbb">{{ form.p3_sp55(placeholder="Задания P3 SP 55") }}</td>
-                <td>{{ form.p4_sp55(placeholder="Задания P4 SP 55") }}</td>
+                <td style="background:#bbbbbb">{{ form.p4_sp55(placeholder="Задания P4 SP 55") }}</td>
                 <td style="background:#bbbbbb">{{ form.p5_sp55(placeholder="Задания P5 SP 55") }}</td>
             </tr>
         </table>
@@ -193,7 +193,10 @@
             <td>{{ task.p4_sp2 }}</td>
             <td>{{ task.p5_sp2 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-
+                <form method="post" action="{{ url_for('users.assign_and_distribute_tasks') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Распределение заданий <br>по неделям</button>
+                </form>
             </td>
         </tr>
         <tr>
@@ -207,9 +210,9 @@
             <td>{{ task.p4_sp3 }}</td>
             <td>{{ task.p5_sp3 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-                <form method="post" action="{{ url_for('users.assign_and_distribute_tasks') }}">
+                <form method="post" action="{{ url_for('users.delete_assignment', task_id=task.id) }}" style="display: inline;">
                     {{ form.csrf_token }}
-                    <button type="submit" class="btn btn-primary">Распределить задания <br>по неделям</button>
+                    <button type="submit" class="btn btn-danger delete-btn">Удалить распределение</button>
                 </form>
             </td>
         </tr>
@@ -223,10 +226,9 @@
             <td>{{ task.p4_sp5 }}</td>
             <td>{{ task.p5_sp5 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-                <form method="post" action="{{ url_for('users.delete_assignment', task_id=task.id) }}" style="display: inline;">
-                    {{ form.csrf_token }}
-                    <button type="submit" class="btn btn-danger delete-btn">Удалить распределение</button>
-                </form>
+            <form action="{{ url_for('users.users_page') }}">
+                <input type="submit" value="Пользователи">
+            </form>
             </td>
 
         </tr>
@@ -240,10 +242,12 @@
             <td>{{ task.p4_sp8 }}</td>
             <td>{{ task.p5_sp8 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-            <form action="{{ url_for('users.users_page') }}">
-                <input type="submit" value="Пользователи">
-            </form>
+                <form method="post" action="{{ url_for('users.insert_hard_tasks') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Ручное распределение <br>сложных заданий</button>
+                </form>
             </td>
+
         </tr>
         <tr>
         <td></td>
@@ -252,14 +256,15 @@
             <td style="background:#bbbbbb">{{ task.p1_sp13 }}</td>
             <td style="background:#bbbbbb">{{ task.p2_sp13 }}</td>
             <td style="background:#bbbbbb">{{ task.p3_sp13 }}</td>
-            <td>{{ task.p4_sp13 }}</td>
+            <td style="background:#bbbbbb">{{ task.p4_sp13 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp13 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-                <form method="post" action="{{ url_for('users.insert_hard_tasks') }}">
+                <form method="post" action="{{ url_for('users.assign_tasks_final') }}">
                     {{ form.csrf_token }}
-                    <button type="submit" class="btn btn-primary">Ручное распределение <br>сложных заданий</button>
+                    <button type="submit" class="btn btn-primary">Распределение всех<br>заданий с учетом КСВЗ</button>
                 </form>
             </td>
+
         </tr>
         <tr>
         <td></td>
@@ -271,11 +276,12 @@
             <td style="background:#bbbbbb">{{ task.p4_sp21 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp21 }}</td>
             <td style="text-align: center; background-color: #f2f2f2;">
-                <form method="post" action="{{ url_for('users.assign_tasks_final') }}">
+            <form method="post" action="{{ url_for('users.delete_final_assignment', task_id=task.id) }}" style="display: inline;">
                     {{ form.csrf_token }}
-                    <button type="submit" class="btn btn-primary">Добавить все <br>распределения</button>
-                </form>
+                    <button type="submit" class="btn btn-danger delete-btn">Удалить распределение</button>
+            </form>
             </td>
+
         </tr>
         <tr>
         <td></td>
@@ -284,9 +290,14 @@
             <td style="background:#bbbbbb">{{ task.p1_sp55 }}</td>
             <td style="background:#bbbbbb">{{ task.p2_sp55 }}</td>
             <td style="background:#bbbbbb">{{ task.p3_sp55 }}</td>
-            <td>{{ task.p4_sp55 }}</td>
+            <td style="background:#bbbbbb">{{ task.p4_sp55 }}</td>
             <td style="background:#bbbbbb">{{ task.p5_sp55 }}</td>
-            <td style="text-align: center; background-color: #f2f2f2;"></td>
+            <td style="text-align: center; background-color: #f2f2f2;">
+            <form method="post" action="{{ url_for('users.calc_date') }}">
+                    {{ form.csrf_token }}
+                    <button type="submit" class="btn btn-primary">Рассчет более <br>точных сроков</button>
+            </form>
+            </td>
         </tr>
         {% endfor %}
         <tr>
@@ -301,11 +312,19 @@
             <th></th>
         </tr>
         <tr>
-            <th colspan="9" style="text-align: center;">Рассчеты с учетом КПД работников и календаря отпусков</th>
+            <th colspan="2" style="text-align: center;">Рассчеты с учетом КСВЗ работников и календаря отпусков</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
         </tr>
+        {% for task_pr in task_pro %}
         <tr>
             <th>Примерное количество рабочих дней</th>
-            <td></td>
+            <td>{{ task_pr.project_duration }}</td>
             <th></th>
             <th></th>
             <th></th>
@@ -315,8 +334,8 @@
             <th></th>
         </tr>
         <tr>
-            <th>Дата начала</th>
-            <td></td>
+            <th></th>
+            <th></th>
             <th></th>
             <th></th>
             <th></th>
@@ -327,7 +346,7 @@
         </tr>
         <tr>
             <th>Дата окончания</th>
-            <td></td>
+            <td>{{ task_pr.ending_project_date }}</td>
             <th></th>
             <th></th>
             <th></th>
@@ -336,6 +355,7 @@
             <th></th>
             <th></th>
         </tr>
+        {% endfor %}
         <tr>
             <th></th>
             <th></th>

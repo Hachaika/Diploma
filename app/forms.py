@@ -63,18 +63,3 @@ class TaskForm(FlaskForm):
     p5_sp55 = IntegerField('P5 SP 55', default=0)
     submit = SubmitField('Submit')
 
-
-class UsersForm(FlaskForm):
-    id = IntegerField("Id")
-    email = StringField("Почта")
-    password = StringField("Пароль")
-    name = StringField("Имя и Фамилия")
-    kpd = FloatField("КПД")
-    submit = SubmitField('Submit')
-
-
-class HardTask(FlaskForm):
-    id = IntegerField("Id")
-    time = IntegerField("Часы для выполнения")
-    name = StringField("Имя и Фамилия")
-    submit = SubmitField('Сохранить')

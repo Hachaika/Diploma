@@ -1,12 +1,11 @@
 import os
 from __init__ import app
 from __init__ import db
-from app.routes import users, tasks
+from app.routes import users
 from app.models import Admins, Users
 
 
 app.register_blueprint(users)
-app.register_blueprint(tasks)
 
 
 def create_admin_user():

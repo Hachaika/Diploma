@@ -1,10 +1,10 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import current_user, login_user, login_required, logout_user
 from __init__ import login_manager
-from .__init__ import users, tasks
+from .__init__ import users
 from .models import Users, Admins, db, Task, TaskAssignment, UsersPro, TaskAssignmentPro, HardTasks, \
     TaskAssignmentFinal, TaskPro
-from .forms import LoginForm, TaskForm, HardTask
+from .forms import LoginForm, TaskForm
 from werkzeug.security import check_password_hash
 from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
@@ -16,7 +16,6 @@ from openpyxl import load_workbook
 import logging
 from itertools import cycle
 import math
-import datetime
 
 results_data = pd.read_excel('results.xlsx', sheet_name='priority_sp_stats')
 
@@ -181,8 +180,10 @@ def index():
 
     tasks = Task.query.all()
 
+    task_pro = TaskPro.query.all()
+
     if current_user.is_authenticated:
-        return render_template('index.html', title='Home', user=current_user, form=form, tasks=tasks)
+        return render_template('index.html', title='Home', user=current_user, form=form, tasks=tasks, task_pro=task_pro)
     else:
         return redirect(url_for('users.login'))
 
@@ -326,27 +327,6 @@ def assign_and_distribute_tasks():
     return redirect(url_for('users.index'))
 
 
-@users.route('/update_task_assignment', methods=['POST'])
-@login_required
-def update_task_assignment():
-    if request.method == 'POST':
-        flash_displayed = False
-        for assignment in current_user.assigned_tasks:
-            assignment_id = request.form.get(f'assignment_id_{assignment.id}')
-            task_assignment = TaskAssignment.query.get(assignment_id)
-            if task_assignment:
-                task_assignment.done = True if request.form.get(f'task_assignment_{assignment.id}') else False
-                db.session.commit()
-                if not flash_displayed:
-                    flash('Состояние задания успешно обновлено', 'success')
-                    flash_displayed = True
-            else:
-                if not flash_displayed:
-                    flash('Задание не найдено', 'error')
-                    flash_displayed = True
-    return redirect(url_for('users.tasks_page'))
-
-
 @login_manager.user_loader
 def load_user(user_id):
     if Admins.query.get(int(user_id)):
@@ -388,13 +368,42 @@ def logout():
 @login_required
 def delete_task(task_id):
     task = Task.query.get(task_id)
+    deleted_assignments = TaskAssignmentFinal.query.filter_by(task_id=task_id).all()
+    deleted_tasks = TaskPro.query.filter_by(task_id=task_id).all()
+    deleted_hard = TaskAssignmentPro.query.filter_by(task_id=task_id).all()
 
     if task:
+        if deleted_assignments:
+            for assignment in deleted_assignments:
+                db.session.delete(assignment)
+            db.session.commit()
+            flash('Распределения удалены успешно', 'success')
+        else:
+            flash('Распределения не найдены', 'error')
+
+        if deleted_tasks:
+            for assignment in deleted_tasks:
+                db.session.delete(assignment)
+            db.session.commit()
+            flash('Финальные рассчеты удалены успешно', 'success')
+        else:
+            flash('Финальные рассчеты не найдены', 'error')
+
+        if deleted_hard:
+            for assignment in deleted_hard:
+                db.session.delete(assignment)
+            db.session.commit()
+            flash('Финальные рассчеты удалены успешно', 'success')
+        else:
+            flash('Финальные рассчеты не найдены', 'error')
+
         try:
             TaskAssignment.query.filter_by(task_id=task_id).delete()
             db.session.delete(task)
             db.session.commit()
             flash('Проект удален успешно', 'success')
+
+
         except IntegrityError:
             db.session.rollback()
             flash('Ошибка удаления проекта: сначала удалите связанные задания', 'error')
@@ -450,7 +459,9 @@ def add_user():
 @login_required
 def delete_user(user_id):
     user = Users.query.get_or_404(user_id)
+    user2 = UsersPro.query.get_or_404(user_id)
     db.session.delete(user)
+    db.session.delete(user2)
     db.session.commit()
     flash('Пользователь успешно удален', 'success')
     return redirect(url_for('users.users_page'))
@@ -506,7 +517,7 @@ def update_kpd_from_excel():
         user_pro = UsersPro.query.filter_by(name=user.name).first()
 
         if not user_pro:
-            user_pro = UsersPro(name=user.name, email=user.email, password=user.password)
+            user_pro = UsersPro(id=user.id, name=user.name, email=user.email, password=user.password)
             db.session.add(user_pro)
             db.session.commit()
         else:
@@ -723,7 +734,6 @@ def delete_hard_assignment(hard_task_id):
 @users.route('/assign_tasks_final', methods=['POST'])
 @login_required
 def assign_tasks_final():
-    # Чтение данных о продолжительности заданий из файла Excel
     task_durations_data = pd.read_excel('results.xlsx', sheet_name='priority_sp_stats')
     # Преобразование данных в словарь
     task_durations = {}
@@ -800,6 +810,17 @@ def assign_tasks_final():
                 # Находим следующую доступную неделю для назначения задания
                 next_week = previous_weeks.get(user_id, 0) + 1
 
+                # Проверяем, находится ли неделя в промежутке отпусков для этого пользователя
+                user = UsersPro.query.get(user_id)
+                task = Task.query.first()  # Получаем первую запись из таблицы Task
+                start_project_date = task.start_project_date
+                if user and user.vacation_start and user.vacation_end:
+                    vacation_start_week = (user.vacation_start - start_project_date).days // 7 + 1
+                    vacation_end_week = (user.vacation_end - start_project_date).days // 7 + 1
+                    if next_week >= vacation_start_week and next_week <= vacation_end_week:
+                        # Если неделя находится в промежутке отпусков, переносим задание за этот период отпуска
+                        next_week = vacation_end_week + 1
+
                 # Обновляем данные задания в таблице TaskAssignmentFinal
                 task_final.assigned = True
                 task_final.hours = hours_required
@@ -816,26 +837,193 @@ def assign_tasks_final():
 
         # Проходимся по каждому заданию из TaskAssignmentPro и добавляем его в TaskAssignmentFinal
         for task_pro in tasks_pro:
+            task_type = f"{task_pro.task_name}"
+            hours_required = task_pro.hours
+            next_week = previous_weeks.get(task_pro.user_id, 0) + (hours_required/17.11)
+
+            # Проверяем, находится ли неделя в промежутке отпусков для этого пользователя
+            user = UsersPro.query.get(task_pro.user_id)
+            task = Task.query.first()  # Получаем первую запись из таблицы Task
+            start_project_date = task.start_project_date
+            if user and user.vacation_start and user.vacation_end:
+                vacation_start_week = (user.vacation_start - start_project_date).days // 7 + 1
+                vacation_end_week = (user.vacation_end - start_project_date).days // 7 + 1
+                if next_week >= vacation_start_week and next_week <= vacation_end_week:
+                    # Если неделя находится в промежутке отпусков, переносим задание за этот период отпуска
+                    next_week = vacation_end_week + 1
+
             new_pro_task_final = TaskAssignmentFinal(
                 task_id=task_pro.task_id,
-                task_name=task_pro.task_name,
-                user_id=task_pro.user_id,
-                assigned=task_pro.assigned,
-                hours=task_pro.hours
+                task_name=task_type,
+                assigned=True,
+                hours=hours_required,
+                week_num=next_week,
+                user_id=task_pro.user_id
             )
             db.session.add(new_pro_task_final)
 
             db.session.commit()
 
-        return "Tasks assigned successfully!"
+        return redirect(url_for('users.index'))
+
+
+@users.route('/delete_final_assignment/<int:task_id>', methods=['POST'])
+@login_required
+def delete_final_assignment(task_id):
+    deleted_assignments = TaskAssignmentFinal.query.filter_by(task_id=task_id).all()
+    deleted_tasks = TaskPro.query.filter_by(task_id=task_id).all()
+    deleted_hard = TaskAssignmentPro.query.filter_by(task_id=task_id).all()
+
+    if deleted_assignments:
+        for assignment in deleted_assignments:
+            db.session.delete(assignment)
+        db.session.commit()
+        flash('Распределения удалены успешно', 'success')
+    else:
+        flash('Распределения не найдены', 'error')
+
+    if deleted_tasks:
+        for assignment in deleted_tasks:
+            db.session.delete(assignment)
+        db.session.commit()
+        flash('Финальные рассчеты удалены успешно', 'success')
+    else:
+        flash('Финальные рассчеты не найдены', 'error')
+
+    if deleted_hard:
+        for assignment in deleted_hard:
+            db.session.delete(assignment)
+        db.session.commit()
+        flash('Финальные рассчеты удалены успешно', 'success')
+    else:
+        flash('Финальные рассчеты не найдены', 'error')
+
+    return redirect(url_for('users.index'))
+
+
+@users.route('/delete_vacation/<int:user_id>', methods=['POST'])
+@login_required
+def delete_vacation(user_id):
+    user = UsersPro.query.get_or_404(user_id)
+
+    if user:
+        user.vacation_start = None
+        user.vacation_end = None
+        db.session.commit()
+        flash('Отпуск удален успешно', 'success')
+    else:
+        flash('Пользователь не найден', 'error')
+
+    return redirect(url_for('users.vacation_page', user_id=user_id))
+
+
+@users.route('/calc_date', methods=['GET', 'POST'])
+@login_required
+def calc_date():
+    try:
+        # Получаем максимальное значение столбца week_num из TaskAssignmentFinal
+        max_week_num = db.session.query(db.func.max(TaskAssignmentFinal.week_num)).scalar()
+
+        # Получаем дату начала проекта из таблицы Task
+        start_project_date = Task.query.first().start_project_date
+
+        task_id = Task.query.first().id
+
+        # Вычисляем конечную дату проекта
+        ending_project_date = start_project_date + timedelta(weeks=max_week_num)
+
+        # Обновляем информацию о проекте в таблице TaskPro
+        task_pro = TaskPro.query.first()
+
+        # Проверяем, есть ли записи в таблице TaskPro
+        existing_task_pro = TaskPro.query.first()
+
+        # Если в таблице нет записей, создаем новую запись
+        if not existing_task_pro:
+            new_task_pro = TaskPro(
+                task_id=task_id,
+                start_project_date=start_project_date,
+                ending_project_date=ending_project_date,
+                project_duration=calculate_working_days(start_project_date, ending_project_date)
+            )
+            db.session.add(new_task_pro)
+            db.session.commit()
+
+        else:
+
+            # Обновляем информацию о проекте
+            task_pro.task_id = Task.id
+            task_pro.start_project_date = start_project_date
+            task_pro.ending_project_date = ending_project_date
+            task_pro.project_duration = calculate_working_days(start_project_date, ending_project_date)
+
+            # Сохраняем изменения в базе данных
+            db.session.commit()
+
+        # Получаем результаты для вставки в таблицу HTML
+        project_duration = TaskPro.query.first().project_duration
+        ending_project_date_s = TaskPro.query.first().ending_project_date
+        ending_project_date_str = ending_project_date_s.strftime("%Y-%m-%d")
+
+        return redirect(url_for('users.index'))
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+def calculate_working_days(start_date, end_date):
+    total_work_days = 0
+    current_date = start_date
+    while current_date <= end_date:
+        # Проверяем, является ли текущий день рабочим
+        if current_date.weekday() < 5:
+            total_work_days += 1
+        # Переходим к следующему дню
+        current_date += timedelta(days=1)
+    return total_work_days
 
 
 @users.route('/tasks', methods=['GET'])
 def tasks_page():
     form = TaskForm()
 
-    tasks = TaskAssignment.query.filter_by(user_id=current_user.id).all()
+    tasks = TaskAssignmentFinal.query.filter_by(user_id=current_user.id).order_by(TaskAssignmentFinal.week_num).all()
 
-    return render_template('tasks.html', title='Tasks', user=current_user, tasks=tasks, form=form)
+    # Получаем start_project_date из таблицы task
+    task = Task.query.first()
+    start_project_date = datetime.combine(task.start_project_date, datetime.min.time())  # Приводим к типу datetime
+    start_project_date_page = start_project_date.date()
+
+    # Определяем номер текущей недели
+    current_week_number = (datetime.now() - start_project_date).days // 7 + 1
+
+    return render_template('tasks.html', title='Tasks', user=current_user, tasks=tasks, form=form,
+                           current_week_number=current_week_number, start_project_date=start_project_date_page)
+
+
+@users.route('/update_task_assignment', methods=['POST'])
+def update_task_assignment():
+    if request.method == 'POST':
+        task_assignment_ids = [key.split('_')[-1] for key in request.form.keys() if key.startswith('task_assignment_')]
+
+        # Получаем все задания пользователя
+        all_task_assignments = TaskAssignmentFinal.query.filter_by(user_id=current_user.id).all()
+
+        # Обновляем состояние задания в базе данных
+        for task_assignment in all_task_assignments:
+            # Проверяем, был ли чекбокс для задания отмечен
+            checkbox_name = 'task_assignment_' + str(task_assignment.id)
+            if checkbox_name in request.form:
+                task_assignment.done = True
+            else:
+                task_assignment.done = False  # Иначе, отмечаем как невыполненное (False)
+
+        # Сохраняем изменения в базе данных
+        db.session.commit()
+
+        flash('Состояние заданий успешно обновлено.', 'success')
+        return redirect(url_for('users.tasks_page'))
+    else:
+        return redirect(url_for('users.tasks_page'))
+
 
 

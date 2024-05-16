@@ -7,9 +7,9 @@
 </head>
 <body>
 
-<h1>Выбор дат для {{ user.name }}</h1>
+<h1>Настройка отпуска для {{ user.name }}</h1>
 <form action="{{ url_for('users.vacation_page', user_id=user_id) }}" method="post">
-    <label for="start_date">Дата начала:</label>
+    <label for="start_date">Дата начала: &nbsp &nbsp &nbsp</label>
     <input type="date" id="start_date" name="start_date" value="{{ start_date|default('') }}" required><br><br>
 
     <label for="end_date">Дата окончания:</label>
@@ -17,6 +17,12 @@
     <button type="submit">Схранить даты</button>
 </form>
 <br>
+
+<form action="{{ url_for('users.delete_vacation', user_id=user_id) }}" method="post">
+    <button type="submit">Удалить отпуск</button>
+</form>
+<br>
+
 <form action="{{ url_for('users.users_page') }}" method="get">
     <button type="submit">Вернуться к пользователям</button>
 </form>
